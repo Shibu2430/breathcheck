@@ -1,0 +1,10 @@
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <div class="brand"><a href="{{ '/' | relative_url }}">BreathCheck</a></div>
+    <nav class="topnav">
+      <a href="{{ '/' | relative_url }}#how-it-works">How it works</a>
+      <a href="{{ '/blog/' | relative_url }}" class="{% if page.url contains '/blog/' %}active{% endif %}">Blog</a>
+      <a href="{{ '/' | relative_url }}">Take the test</a>
+    </nav>
+  </div>
+</header>

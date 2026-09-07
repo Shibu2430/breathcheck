@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BreathCheck — Understand your breathing</title>
+<meta name="description" content="A 3-minute guided breathing assessment. Discover your breathing age, control score, and relaxation level, then track your progress daily.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <div class="brand">BreathCheck</div>
+    <nav class="topnav">
+      <a href="#how-it-works">How it works</a>
+      <a href="blog/">Blog</a>
+      <a href="#progress" id="nav-progress" hidden>Progress</a>
+    </nav>
+    <button class="btn btn-primary btn-sm" id="nav-cta">Start test</button>
+  </div>
+</header>
+
+<main>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div class="hero-copy">
+        <h1>How well are you breathing right now?</h1>
+        <p class="lead">A three-minute guided check. Three quick stages, one honest read on your breathing control, and a plan for tomorrow.</p>
+        <div class="hero-actions">
+          <button class="btn btn-primary" id="start-test-btn">Start breathing test</button>
+          <a href="#how-it-works" class="btn btn-ghost">See how it works</a>
+        </div>
+        <dl class="hero-stats">
+          <div><dt>3</dt><dd>minutes</dd></div>
+          <div><dt>3</dt><dd>stages</dd></div>
+          <div><dt>0</dt><dd>signup required</dd></div>
+        </dl>
+      </div>
+      <div class="hero-visual" aria-hidden="true">
+        <div class="lung-stage">
+          <svg viewBox="0 0 240 260" class="lung-svg">
+            <defs>
+              <radialGradient id="volL" cx="35%" cy="30%" r="80%">
+                <stop offset="0%" stop-color="#F2F7E8"/>
+                <stop offset="55%" stop-color="#C7DFA0"/>
+                <stop offset="100%" stop-color="#7FA84A"/>
+              </radialGradient>
+              <radialGradient id="volR" cx="65%" cy="30%" r="80%">
+                <stop offset="0%" stop-color="#F2F7E8"/>
+                <stop offset="55%" stop-color="#C7DFA0"/>
+                <stop offset="100%" stop-color="#7FA84A"/>
+              </radialGradient>
+            </defs>
+            <rect x="114" y="16" width="12" height="44" rx="6" fill="#4E7A28"/>
+            <path d="M120 54 C 104 60 92 70 84 86" fill="none" stroke="#4E7A28" stroke-width="6" stroke-linecap="round"/>
+            <path d="M120 54 C 136 60 148 70 156 86" fill="none" stroke="#4E7A28" stroke-width="6" stroke-linecap="round"/>
+            <g class="lung lung-left">
+              <path d="M114 58 C 90 54 62 60 46 80 C 30 100 24 130 26 158 C 28 184 36 208 56 218 C 72 226 92 220 102 204 C 110 190 112 168 113 148 C 114 118 115 86 114 58 Z" fill="url(#volL)" stroke="#2C4E09" stroke-width="2"/>
+            </g>
+            <g class="lung lung-right">
+              <path d="M126 58 C 150 54 178 60 194 80 C 210 100 216 130 214 158 C 212 184 204 208 184 218 C 168 226 148 220 138 204 C 130 190 128 168 127 148 C 126 118 125 86 126 58 Z" fill="url(#volR)" stroke="#2C4E09" stroke-width="2"/>
+            </g>
+          </svg>
+          <p class="lung-phase-label" id="hero-phase">breathe with it</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- INTRO -->
+  <section class="intro" id="how-it-works">
+    <div class="wrap intro-grid">
+      <div class="intro-text">
+        <h2>Most people breathe worse than they think.</h2>
+        <p>Too fast, too shallow, or tangled up in stress patterns nobody ever points out. This test measures three things that predict all three: how you breathe at rest, how well you tolerate a breath hold, and how steady you can keep a paced rhythm.</p>
+      </div>
+      <ol class="intro-steps">
+        <li><span class="step-num">1</span><div><strong>Resting rate</strong><p>Count your breaths for 60 seconds, sitting normally.</p></div></li>
+        <li><span class="step-num">2</span><div><strong>Breath hold</strong><p>One relaxed hold, timed to the second.</p></div></li>
+        <li><span class="step-num">3</span><div><strong>Box breathing</strong><p>Four rounds of a paced 4-4-4-4 rhythm.</p></div></li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ASSESSMENT -->
+  <section class="assessment" id="assessment" hidden>
+    <div class="wrap">
+
+      <div class="progress-track" aria-hidden="true">
+        <div class="progress-track-fill" id="stage-progress-fill"></div>
+      </div>
+
+      <!-- Stage 1: Resting rate -->
+      <div class="stage" id="stage-1" data-stage="1">
+        <p class="stage-eyebrow">Stage 1 of 3</p>
+        <h2>Resting breathing rate</h2>
+        <p class="stage-instructions">Sit comfortably. Tap the button once for every full breath (in and out counts as one) for 60 seconds.</p>
+        <div class="stage-panel">
+          <div class="timer-display" id="rate-timer">60</div>
+          <div class="tap-count"><span id="rate-count">0</span> breaths</div>
+          <button class="btn btn-primary btn-lg" id="rate-tap-btn">Tap per breath</button>
+          <button class="btn btn-ghost btn-sm" id="rate-start-btn">Start 60s timer</button>
+        </div>
+      </div>
+
+      <!-- Stage 2: Breath hold -->
+      <div class="stage" id="stage-2" data-stage="2" hidden>
+        <p class="stage-eyebrow">Stage 2 of 3</p>
+        <h2>Breath hold</h2>
+        <p class="stage-instructions">Take a normal breath in, exhale normally, then hold. Press stop the moment it feels uncomfortable — this isn't a contest.</p>
+        <div class="stage-panel">
+          <div class="timer-display" id="hold-timer">0.0s</div>
+          <button class="btn btn-primary btn-lg" id="hold-toggle-btn">Start hold</button>
+        </div>
+      </div>
+
+      <!-- Stage 3: Box breathing -->
+      <div class="stage" id="stage-3" data-stage="3" hidden>
+        <p class="stage-eyebrow">Stage 3 of 3</p>
+        <h2>Box breathing</h2>
+        <p class="stage-instructions">Follow the lungs. Four seconds in, four second hold, four seconds out, four second hold. Four rounds.</p>
+        <div class="stage-panel">
+          <div class="lung-stage lung-stage-lg">
+            <svg viewBox="0 0 240 260" class="lung-svg">
+              <defs>
+                <radialGradient id="volL2" cx="35%" cy="30%" r="80%">
+                  <stop offset="0%" stop-color="#F2F7E8"/>
+                  <stop offset="55%" stop-color="#C7DFA0"/>
+                  <stop offset="100%" stop-color="#7FA84A"/>
+                </radialGradient>
+                <radialGradient id="volR2" cx="65%" cy="30%" r="80%">
+                  <stop offset="0%" stop-color="#F2F7E8"/>
+                  <stop offset="55%" stop-color="#C7DFA0"/>
+                  <stop offset="100%" stop-color="#7FA84A"/>
+                </radialGradient>
+                <linearGradient id="fillGrad2" x1="0%" y1="100%" x2="0%" y2="0%">
+                  <stop offset="0%" stop-color="#2C5A0A"/>
+                  <stop offset="60%" stop-color="#5B9A2E"/>
+                  <stop offset="100%" stop-color="#9BCB5E"/>
+                </linearGradient>
+                <clipPath id="clipLeft2"><path d="M114 58 C 90 54 62 60 46 80 C 30 100 24 130 26 158 C 28 184 36 208 56 218 C 72 226 92 220 102 204 C 110 190 112 168 113 148 C 114 118 115 86 114 58 Z"/></clipPath>
+                <clipPath id="clipRight2"><path d="M126 58 C 150 54 178 60 194 80 C 210 100 216 130 214 158 C 212 184 204 208 184 218 C 168 226 148 220 138 204 C 130 190 128 168 127 148 C 126 118 125 86 126 58 Z"/></clipPath>
+              </defs>
+              <rect x="114" y="16" width="12" height="44" rx="6" fill="#4E7A28"/>
+              <path d="M120 54 C 104 60 92 70 84 86" fill="none" stroke="#4E7A28" stroke-width="6" stroke-linecap="round"/>
+              <path d="M120 54 C 136 60 148 70 156 86" fill="none" stroke="#4E7A28" stroke-width="6" stroke-linecap="round"/>
+              <g class="lung box-lung-left" id="box-lung-left">
+                <path d="M114 58 C 90 54 62 60 46 80 C 30 100 24 130 26 158 C 28 184 36 208 56 218 C 72 226 92 220 102 204 C 110 190 112 168 113 148 C 114 118 115 86 114 58 Z" fill="url(#volL2)" stroke="#2C4E09" stroke-width="2"/>
+                <rect class="air-fill" id="box-air-left" x="20" y="55" width="100" height="180" fill="url(#fillGrad2)" clip-path="url(#clipLeft2)" opacity="0.88"/>
+              </g>
+              <g class="lung box-lung-right" id="box-lung-right">
+                <path d="M126 58 C 150 54 178 60 194 80 C 210 100 216 130 214 158 C 212 184 204 208 184 218 C 168 226 148 220 138 204 C 130 190 128 168 127 148 C 126 118 125 86 126 58 Z" fill="url(#volR2)" stroke="#2C4E09" stroke-width="2"/>
+                <rect class="air-fill" id="box-air-right" x="120" y="55" width="100" height="180" fill="url(#fillGrad2)" clip-path="url(#clipRight2)" opacity="0.88"/>
+              </g>
+            </svg>
+            <p class="lung-phase-label" id="box-phase-label">get ready</p>
+            <p class="lung-round-label" id="box-round-label">round 1 of 4</p>
+          </div>
+          <button class="btn btn-primary btn-lg" id="box-start-btn">Begin box breathing</button>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- RESULTS -->
+  <section class="results" id="results" hidden>
+    <div class="wrap">
+      <p class="stage-eyebrow">Your results</p>
+      <h2>Today's breathing snapshot</h2>
+
+      <div class="score-grid">
+        <div class="score-card score-card-lg">
+          <span class="score-label">Overall wellness</span>
+          <span class="score-value" id="score-overall">—</span>
+          <span class="score-sub">out of 100</span>
+        </div>
+        <div class="score-card">
+          <span class="score-label">Breathing age</span>
+          <span class="score-value" id="score-age">—</span>
+        </div>
+        <div class="score-card">
+          <span class="score-label">Control score</span>
+          <span class="score-value" id="score-control">—</span>
+        </div>
+        <div class="score-card">
+          <span class="score-label">Resting rate</span>
+          <span class="score-value" id="score-rate">—</span>
+          <span class="score-sub">breaths / min</span>
+        </div>
+      </div>
+
+      <div class="compare-panel" id="compare-panel" hidden>
+        <p class="compare-title">Today vs yesterday</p>
+        <div class="compare-rows" id="compare-rows"></div>
+      </div>
+
+      <div class="plan-panel">
+        <p class="plan-title">Today's recommendation</p>
+        <p class="plan-text" id="plan-text">—</p>
+      </div>
+
+      <button class="btn btn-ghost" id="retake-btn">Take the test again</button>
+    </div>
+  </section>
+
+  <!-- PROGRESS -->
+  <section class="progress-section" id="progress" hidden>
+    <div class="wrap">
+      <h2>Your progress</h2>
+      <div class="streak-row">
+        <div class="streak-card">
+          <span class="streak-value" id="streak-current">0</span>
+          <span class="streak-label">current streak</span>
+        </div>
+        <div class="streak-card">
+          <span class="streak-value" id="streak-best">0</span>
+          <span class="streak-label">best streak</span>
+        </div>
+      </div>
+      <div class="history-list" id="history-list"></div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="wrap footer-inner">
+    <p>BreathCheck is a self-guided wellness tool, not a medical device. Scores are illustrative trend indicators, not diagnostic measurements.</p>
+  </div>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>

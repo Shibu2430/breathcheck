@@ -1,0 +1,28 @@
+title: BreathCheck
+description: "Understand your breathing. Improve your calm. Track your progress."
+url: ""
+baseurl: ""
+
+markdown: kramdown
+permalink: /blog/:title/
+
+collections:
+  posts:
+    output: true
+
+plugins:
+  - jekyll-feed
+  - jekyll-seo-tag
+
+defaults:
+  - scope:
+      path: ""
+      type: posts
+    values:
+      layout: post
+
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - README.md
+  - node_modules
