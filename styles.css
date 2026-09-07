@@ -25,6 +25,10 @@
 
 * { box-sizing: border-box; }
 
+/* The hidden attribute must always win over any explicit display rule below,
+   otherwise elements toggled with .hidden = true/false can stay visually stuck. */
+[hidden] { display: none !important; }
+
 html { scroll-behavior: smooth; }
 
 body {
