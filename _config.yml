@@ -1,7 +1,7 @@
 title: BreathCheck
 description: "Understand your breathing. Improve your calm. Track your progress."
-url: ""
-baseurl: ""
+url: "https://shibu2430.github.io"
+baseurl: "/breathcheck"
 
 markdown: kramdown
 permalink: /blog/:title/

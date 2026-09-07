@@ -6,6 +6,7 @@
   /* ---------- section refs ---------- */
   const heroSection = document.querySelector('.hero');
   const introSection = document.getElementById('how-it-works');
+  const exercisesSection = document.getElementById('exercises');
   const assessmentSection = document.getElementById('assessment');
   const resultsSection = document.getElementById('results');
   const progressSection = document.getElementById('progress');
@@ -33,6 +34,7 @@
   function startAssessment() {
     heroSection.style.display = 'none';
     introSection.style.display = 'none';
+    exercisesSection.style.display = 'none';
     showOnly(assessmentSection);
     session.rate = null;
     session.hold = null;
@@ -41,10 +43,26 @@
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
+  function returnToHome() {
+    heroSection.style.display = '';
+    introSection.style.display = '';
+    exercisesSection.style.display = '';
+    showOnly(null);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
   document.getElementById('start-test-btn').addEventListener('click', startAssessment);
   navCtaBtn.addEventListener('click', () => {
     if (assessmentSection.hidden && resultsSection.hidden) startAssessment();
     else window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  /* Exit the scored assessment at any point — no result is saved */
+  document.getElementById('exit-assessment-btn').addEventListener('click', () => {
+    clearInterval(rateInterval);
+    clearInterval(holdInterval);
+    clearTimeout(boxTimeout);
+    returnToHome();
   });
 
   /* ================= STAGE 1: resting rate ================= */
@@ -202,11 +220,13 @@
   }
 
   function scoreFromHold(seconds) {
-    if (seconds >= 60) return 95;
-    if (seconds >= 40) return 85;
-    if (seconds >= 25) return 70;
-    if (seconds >= 15) return 55;
-    return 35;
+    /* Bands follow the standard BOLT / Buteyko Control Pause scale:
+       under 10s = disrupted breathing pattern, 40s+ = excellent control */
+    if (seconds >= 40) return 95;
+    if (seconds >= 30) return 82;
+    if (seconds >= 20) return 68;
+    if (seconds >= 10) return 50;
+    return 30;
   }
 
   function computeScores() {
@@ -229,7 +249,7 @@
     if (scores.overall >= 80) {
       return 'Strong session. Try advanced coherence breathing (5.5 breaths per minute) for five minutes today to build on this.';
     }
-    if (scores.rate > 18 || scores.hold < 25) {
+    if (scores.rate > 18 || scores.hold < 20) {
       return 'Your breathing is running a little fast or shallow today. Five minutes of slow diaphragmatic breathing this evening will help more than anything else.';
     }
     return 'Solid baseline. A short box-breathing session before anything stressful today will keep this steady.';
@@ -364,6 +384,227 @@
     navProgressLink.hidden = false;
     progressSection.hidden = false;
     renderProgress();
+  }
+
+  /* ================= GUIDED EXERCISES (Box / 4-7-8 / Bedtime) ================= */
+
+  const exercisePlayer = document.getElementById('exercise-player');
+  const exercisePlayerTitle = document.getElementById('exercise-player-title');
+  const durationPicker = document.getElementById('duration-picker');
+  const exLungLeft = document.getElementById('ex-lung-left');
+  const exLungRight = document.getElementById('ex-lung-right');
+  const exAirLeft = document.getElementById('ex-air-left');
+  const exAirRight = document.getElementById('ex-air-right');
+  const exercisePhaseLabel = document.getElementById('exercise-phase-label');
+  const exerciseRoundLabel = document.getElementById('exercise-round-label');
+  const exerciseBeginBtn = document.getElementById('exercise-begin-btn');
+  const exerciseExitBtn = document.getElementById('exercise-exit-btn');
+  const musicToggleBtn = document.getElementById('music-toggle-btn');
+  const musicToggleLabel = document.getElementById('music-toggle-label');
+
+  const EXERCISE_DEFS = {
+    box: {
+      title: 'Box breathing',
+      phases: [
+        { label: 'Inhale', seconds: 4, action: 'inhale' },
+        { label: 'Hold', seconds: 4, action: 'hold' },
+        { label: 'Exhale', seconds: 4, action: 'exhale' },
+        { label: 'Hold', seconds: 4, action: 'hold' }
+      ],
+      rounds: 4,
+      theme: 'light',
+      music: false,
+      durationPicker: false
+    },
+    '478': {
+      title: '4-7-8 breathing',
+      phases: [
+        { label: 'Inhale', seconds: 4, action: 'inhale' },
+        { label: 'Hold', seconds: 7, action: 'hold' },
+        { label: 'Exhale', seconds: 8, action: 'exhale' }
+      ],
+      rounds: 4,
+      theme: 'light',
+      music: false,
+      durationPicker: false
+    },
+    bedtime: {
+      title: 'Bedtime wind down',
+      phases: [
+        { label: 'Inhale', seconds: 4, action: 'inhale' },
+        { label: 'Hold', seconds: 7, action: 'hold' },
+        { label: 'Exhale', seconds: 8, action: 'exhale' }
+      ],
+      rounds: 16, /* default, recalculated from duration picker */
+      theme: 'dark',
+      music: true,
+      durationPicker: true
+    }
+  };
+
+  let activeExercise = null;
+  let exTimeout = null;
+  let exPhaseIndex = 0;
+  let exRound = 1;
+  let selectedMinutes = 5;
+
+  function setExLungState(scale, fill) {
+    [exLungLeft, exLungRight].forEach(g => { g.style.transform = `scale(${scale})`; });
+    [exAirLeft, exAirRight].forEach(r => { r.style.transform = `scaleY(${fill})`; });
+  }
+
+  function openExercisePlayer(key) {
+    const def = EXERCISE_DEFS[key];
+    activeExercise = key;
+    exPhaseIndex = 0;
+    exRound = 1;
+
+    exercisePlayerTitle.textContent = def.title;
+    exercisePlayer.classList.remove('theme-light', 'theme-dark');
+    exercisePlayer.classList.add('theme-' + def.theme);
+    exercisePhaseLabel.textContent = 'get ready';
+    exerciseRoundLabel.textContent = '';
+    setExLungState(0.4, 0.15);
+
+    durationPicker.hidden = !def.durationPicker;
+    if (def.durationPicker) {
+      selectedMinutes = 5;
+      durationPicker.querySelectorAll('.duration-opt').forEach(btn => {
+        btn.classList.toggle('selected', Number(btn.dataset.minutes) === selectedMinutes);
+      });
+    }
+
+    musicToggleBtn.hidden = !def.music;
+    musicEnabled = true;
+    musicToggleBtn.setAttribute('aria-pressed', 'true');
+    musicToggleLabel.textContent = 'Sound on';
+
+    exerciseBeginBtn.hidden = false;
+    exerciseBeginBtn.textContent = 'Begin';
+
+    exercisePlayer.hidden = false;
+  }
+
+  function closeExercisePlayer() {
+    clearTimeout(exTimeout);
+    stopAmbientTone();
+    exercisePlayer.hidden = true;
+    activeExercise = null;
+  }
+
+  durationPicker.querySelectorAll('.duration-opt').forEach(btn => {
+    btn.addEventListener('click', () => {
+      selectedMinutes = Number(btn.dataset.minutes);
+      durationPicker.querySelectorAll('.duration-opt').forEach(b => b.classList.toggle('selected', b === btn));
+    });
+  });
+
+  document.querySelectorAll('[data-exercise]').forEach(btn => {
+    btn.addEventListener('click', () => openExercisePlayer(btn.dataset.exercise));
+  });
+
+  exerciseExitBtn.addEventListener('click', closeExercisePlayer);
+
+  exerciseBeginBtn.addEventListener('click', () => {
+    const def = EXERCISE_DEFS[activeExercise];
+    let rounds = def.rounds;
+    if (def.durationPicker) {
+      const cycleSeconds = def.phases.reduce((sum, p) => sum + p.seconds, 0);
+      rounds = Math.max(3, Math.round((selectedMinutes * 60) / cycleSeconds));
+    }
+    exerciseBeginBtn.hidden = true;
+    durationPicker.hidden = true;
+    if (def.music) startAmbientTone();
+    runExercisePhase(def, rounds);
+  });
+
+  function runExercisePhase(def, totalRounds) {
+    const phase = def.phases[exPhaseIndex % def.phases.length];
+    exercisePhaseLabel.textContent = phase.label.toLowerCase();
+    exerciseRoundLabel.textContent = `round ${exRound} of ${totalRounds}`;
+
+    if (phase.action === 'inhale') {
+      setExLungState(1.08, 1);
+      setToneLevel(0.05, phase.seconds);
+    } else if (phase.action === 'exhale') {
+      setExLungState(0.9, 0.22);
+      setToneLevel(0.015, phase.seconds);
+    }
+    /* hold: lungs and tone stay steady */
+
+    exTimeout = setTimeout(() => {
+      exPhaseIndex += 1;
+      if (exPhaseIndex % def.phases.length === 0) {
+        exRound += 1;
+      }
+      if (exRound > totalRounds) {
+        exercisePhaseLabel.textContent = 'well done';
+        exerciseRoundLabel.textContent = '';
+        stopAmbientTone();
+        setTimeout(closeExercisePlayer, 1600);
+        return;
+      }
+      runExercisePhase(def, totalRounds);
+    }, phase.seconds * 1000);
+  }
+
+  musicToggleBtn.addEventListener('click', () => {
+    musicEnabled = !musicEnabled;
+    musicToggleBtn.setAttribute('aria-pressed', String(musicEnabled));
+    musicToggleLabel.textContent = musicEnabled ? 'Sound on' : 'Sound off';
+    if (!musicEnabled && gainNode) {
+      gainNode.gain.cancelScheduledValues(audioCtx.currentTime);
+      gainNode.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+    }
+  });
+
+  /* ---- synthesized ambient tone via Web Audio API (no licensed audio needed) ---- */
+  let audioCtx = null;
+  let oscNodes = [];
+  let gainNode = null;
+  let musicEnabled = true;
+
+  function startAmbientTone() {
+    if (!audioCtx) {
+      const AudioCtor = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtor) return; /* unsupported browser, fail silently */
+      audioCtx = new AudioCtor();
+    }
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+
+    gainNode = audioCtx.createGain();
+    gainNode.gain.value = 0.0001;
+    gainNode.connect(audioCtx.destination);
+
+    const freqs = [110, 164.81]; /* soft low interval, A2 + E3 */
+    oscNodes = freqs.map(f => {
+      const osc = audioCtx.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.value = f;
+      osc.connect(gainNode);
+      osc.start();
+      return osc;
+    });
+  }
+
+  function stopAmbientTone() {
+    if (gainNode && audioCtx) {
+      gainNode.gain.cancelScheduledValues(audioCtx.currentTime);
+      gainNode.gain.setValueAtTime(gainNode.gain.value, audioCtx.currentTime);
+      gainNode.gain.linearRampToValueAtTime(0.0001, audioCtx.currentTime + 0.6);
+    }
+    const nodesToStop = oscNodes;
+    setTimeout(() => { nodesToStop.forEach(o => { try { o.stop(); } catch (e) {} }); }, 700);
+    oscNodes = [];
+    gainNode = null;
+  }
+
+  function setToneLevel(target, rampSeconds) {
+    if (!gainNode || !audioCtx || !musicEnabled) return;
+    const now = audioCtx.currentTime;
+    gainNode.gain.cancelScheduledValues(now);
+    gainNode.gain.setValueAtTime(gainNode.gain.value, now);
+    gainNode.gain.linearRampToValueAtTime(target, now + Math.max(0.5, rampSeconds));
   }
 
 })();

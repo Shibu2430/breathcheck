@@ -14,9 +14,10 @@
 
 <header class="topbar">
   <div class="wrap topbar-inner">
-    <div class="brand">BreathCheck</div>
+    <a class="brand" href="./" aria-label="BreathCheck home">BreathCheck</a>
     <nav class="topnav">
       <a href="#how-it-works">How it works</a>
+      <a href="#exercises">Exercises</a>
       <a href="blog/">Blog</a>
       <a href="#progress" id="nav-progress" hidden>Progress</a>
     </nav>
@@ -88,12 +89,101 @@
     </div>
   </section>
 
+  <!-- EXERCISES -->
+  <section class="exercises" id="exercises">
+    <div class="wrap">
+      <p class="stage-eyebrow">Guided practice</p>
+      <h2>Breathing exercises</h2>
+      <p class="exercises-lead">No scoring, no timer pressure. Pick one and follow the lungs — these work any time you want to reset, and one is built for winding down at night.</p>
+
+      <div class="exercise-grid">
+        <div class="exercise-card">
+          <h3>Box breathing</h3>
+          <p>Four seconds in, hold, out, hold. A steady, even rhythm that's easy to learn and good before anything stressful.</p>
+          <button class="btn btn-ghost" data-exercise="box">Start · 4 rounds</button>
+        </div>
+        <div class="exercise-card">
+          <h3>4-7-8 breathing</h3>
+          <p>Inhale for 4, hold for 7, exhale slowly for 8. A longer exhale that's widely used to settle the body before rest.</p>
+          <button class="btn btn-ghost" data-exercise="478">Start · 4 rounds</button>
+        </div>
+        <div class="exercise-card exercise-card-featured">
+          <h3>Bedtime wind down</h3>
+          <p>A longer, dimmed session with a soft ambient tone that breathes with you. Pick 3, 5, or 10 minutes and let it run.</p>
+          <button class="btn btn-primary" data-exercise="bedtime">Start wind down</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- EXERCISE PLAYER (shared overlay) -->
+  <div class="exercise-player theme-light" id="exercise-player" hidden>
+    <button class="exit-btn exit-btn-player" id="exercise-exit-btn" type="button">Exit</button>
+
+    <div class="exercise-player-inner">
+      <h3 class="exercise-player-title" id="exercise-player-title">Box breathing</h3>
+
+      <div class="duration-picker" id="duration-picker" hidden>
+        <button class="duration-opt" data-minutes="3" type="button">3 min</button>
+        <button class="duration-opt" data-minutes="5" type="button">5 min</button>
+        <button class="duration-opt" data-minutes="10" type="button">10 min</button>
+      </div>
+
+      <div class="lung-stage lung-stage-lg">
+        <svg viewBox="0 0 240 260" class="lung-svg">
+          <defs>
+            <radialGradient id="exVolL" cx="35%" cy="30%" r="80%">
+              <stop offset="0%" stop-color="#F2F7E8"/>
+              <stop offset="55%" stop-color="#C7DFA0"/>
+              <stop offset="100%" stop-color="#7FA84A"/>
+            </radialGradient>
+            <radialGradient id="exVolR" cx="65%" cy="30%" r="80%">
+              <stop offset="0%" stop-color="#F2F7E8"/>
+              <stop offset="55%" stop-color="#C7DFA0"/>
+              <stop offset="100%" stop-color="#7FA84A"/>
+            </radialGradient>
+            <linearGradient id="exFillGrad" x1="0%" y1="100%" x2="0%" y2="0%">
+              <stop offset="0%" stop-color="#2C5A0A"/>
+              <stop offset="60%" stop-color="#5B9A2E"/>
+              <stop offset="100%" stop-color="#9BCB5E"/>
+            </linearGradient>
+            <clipPath id="exClipLeft"><path d="M114 58 C 90 54 62 60 46 80 C 30 100 24 130 26 158 C 28 184 36 208 56 218 C 72 226 92 220 102 204 C 110 190 112 168 113 148 C 114 118 115 86 114 58 Z"/></clipPath>
+            <clipPath id="exClipRight"><path d="M126 58 C 150 54 178 60 194 80 C 210 100 216 130 214 158 C 212 184 204 208 184 218 C 168 226 148 220 138 204 C 130 190 128 168 127 148 C 126 118 125 86 126 58 Z"/></clipPath>
+          </defs>
+          <rect x="114" y="16" width="12" height="44" rx="6" fill="#4E7A28"/>
+          <path d="M120 54 C 104 60 92 70 84 86" fill="none" stroke="#4E7A28" stroke-width="6" stroke-linecap="round"/>
+          <path d="M120 54 C 136 60 148 70 156 86" fill="none" stroke="#4E7A28" stroke-width="6" stroke-linecap="round"/>
+          <g class="lung" id="ex-lung-left">
+            <path d="M114 58 C 90 54 62 60 46 80 C 30 100 24 130 26 158 C 28 184 36 208 56 218 C 72 226 92 220 102 204 C 110 190 112 168 113 148 C 114 118 115 86 114 58 Z" fill="url(#exVolL)" stroke="#2C4E09" stroke-width="2"/>
+            <rect class="air-fill" id="ex-air-left" x="20" y="55" width="100" height="180" fill="url(#exFillGrad)" clip-path="url(#exClipLeft)" opacity="0.88"/>
+          </g>
+          <g class="lung" id="ex-lung-right">
+            <path d="M126 58 C 150 54 178 60 194 80 C 210 100 216 130 214 158 C 212 184 204 208 184 218 C 168 226 148 220 138 204 C 130 190 128 168 127 148 C 126 118 125 86 126 58 Z" fill="url(#exVolR)" stroke="#2C4E09" stroke-width="2"/>
+            <rect class="air-fill" id="ex-air-right" x="120" y="55" width="100" height="180" fill="url(#exFillGrad)" clip-path="url(#exClipRight)" opacity="0.88"/>
+          </g>
+        </svg>
+        <p class="lung-phase-label" id="exercise-phase-label">get ready</p>
+        <p class="lung-round-label" id="exercise-round-label"></p>
+      </div>
+
+      <div class="exercise-player-controls">
+        <button class="btn btn-primary btn-lg" id="exercise-begin-btn">Begin</button>
+        <button class="music-toggle" id="music-toggle-btn" type="button" hidden aria-pressed="true">
+          <span id="music-toggle-label">Sound on</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- ASSESSMENT -->
   <section class="assessment" id="assessment" hidden>
     <div class="wrap">
 
-      <div class="progress-track" aria-hidden="true">
-        <div class="progress-track-fill" id="stage-progress-fill"></div>
+      <div class="assessment-topbar">
+        <div class="progress-track" aria-hidden="true">
+          <div class="progress-track-fill" id="stage-progress-fill"></div>
+        </div>
+        <button class="exit-btn" id="exit-assessment-btn" type="button">Exit test</button>
       </div>
 
       <!-- Stage 1: Resting rate -->
@@ -112,11 +202,12 @@
       <!-- Stage 2: Breath hold -->
       <div class="stage" id="stage-2" data-stage="2" hidden>
         <p class="stage-eyebrow">Stage 2 of 3</p>
-        <h2>Breath hold</h2>
-        <p class="stage-instructions">Take a normal breath in, exhale normally, then hold. Press stop the moment it feels uncomfortable — this isn't a contest.</p>
+        <h2>Breath hold control</h2>
+        <p class="stage-instructions">Breathe normally, then let a normal exhale happen and hold. Stop at the very first urge to breathe — not your maximum. This is a control test, not an endurance test.</p>
         <div class="stage-panel">
           <div class="timer-display" id="hold-timer">0.0s</div>
           <button class="btn btn-primary btn-lg" id="hold-toggle-btn">Start hold</button>
+          <p class="stage-hint">Stop as soon as you feel the first urge to breathe, a swallow reflex, or your throat or belly contract.</p>
         </div>
       </div>
 
