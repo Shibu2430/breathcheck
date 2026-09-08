@@ -232,6 +232,7 @@ a { color: var(--moss-700); }
   border-radius: var(--radius-lg);
   padding: 40px;
   display: flex;
+  align-items: center;
   justify-content: center;
 }
 
@@ -284,6 +285,8 @@ a { color: var(--moss-700); }
   position: relative;
   z-index: 1;
   width: 100%;
+  height: auto;
+  aspect-ratio: 700 / 660;
   display: block;
   filter: brightness(0.9) saturate(0.85) drop-shadow(0 10px 22px rgba(44,78,9,0.2));
   transform: scale(0.94);
