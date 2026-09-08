@@ -5,6 +5,7 @@
 
   /* ---------- section refs ---------- */
   const heroSection = document.querySelector('.hero');
+  const whyMattersSection = document.getElementById('why-matters');
   const introSection = document.getElementById('how-it-works');
   const exercisesSection = document.getElementById('exercises');
   const assessmentSection = document.getElementById('assessment');
@@ -33,6 +34,7 @@
 
   function startAssessment() {
     heroSection.style.display = 'none';
+    whyMattersSection.style.display = 'none';
     introSection.style.display = 'none';
     exercisesSection.style.display = 'none';
     showOnly(assessmentSection);
@@ -45,6 +47,7 @@
 
   function returnToHome() {
     heroSection.style.display = '';
+    whyMattersSection.style.display = '';
     introSection.style.display = '';
     exercisesSection.style.display = '';
     showOnly(null);
@@ -57,12 +60,39 @@
     else window.scrollTo({ top: 0, behavior: 'smooth' });
   });
 
+  /* ================= CONFIRM MODAL (shared) ================= */
+  const confirmModal = document.getElementById('confirm-modal');
+  const confirmModalText = document.getElementById('confirm-modal-text');
+  const confirmCancelBtn = document.getElementById('confirm-cancel-btn');
+  const confirmExitBtn = document.getElementById('confirm-exit-btn');
+  let pendingConfirmAction = null;
+
+  function showConfirm(message, onConfirm) {
+    confirmModalText.textContent = message;
+    pendingConfirmAction = onConfirm;
+    confirmModal.hidden = false;
+  }
+
+  function hideConfirm() {
+    confirmModal.hidden = true;
+    pendingConfirmAction = null;
+  }
+
+  confirmCancelBtn.addEventListener('click', hideConfirm);
+  confirmExitBtn.addEventListener('click', () => {
+    const action = pendingConfirmAction;
+    hideConfirm();
+    if (action) action();
+  });
+
   /* Exit the scored assessment at any point — no result is saved */
   document.getElementById('exit-assessment-btn').addEventListener('click', () => {
-    clearInterval(rateInterval);
-    clearInterval(holdInterval);
-    clearTimeout(boxTimeout);
-    returnToHome();
+    showConfirm("Exit the test now? Your progress on this attempt won't be saved.", () => {
+      clearInterval(rateInterval);
+      clearInterval(holdInterval);
+      clearTimeout(boxTimeout);
+      returnToHome();
+    });
   });
 
   /* ================= STAGE 1: resting rate ================= */
@@ -116,7 +146,7 @@
     goToStage(2);
   }
 
-  /* ================= STAGE 2: breath hold ================= */
+  /* ================= STAGE 2: breath hold control (BOLT-style) ================= */
   const holdTimerEl = document.getElementById('hold-timer');
   const holdToggleBtn = document.getElementById('hold-toggle-btn');
 
@@ -150,14 +180,11 @@
     }
   });
 
-  /* ================= STAGE 3: box breathing ================= */
+  /* ================= STAGE 3: box breathing (scored assessment) ================= */
   const boxStartBtn = document.getElementById('box-start-btn');
   const boxPhaseLabel = document.getElementById('box-phase-label');
   const boxRoundLabel = document.getElementById('box-round-label');
-  const boxLungLeft = document.getElementById('box-lung-left');
-  const boxLungRight = document.getElementById('box-lung-right');
-  const boxAirLeft = document.getElementById('box-air-left');
-  const boxAirRight = document.getElementById('box-air-right');
+  const boxLungVisual = document.getElementById('box-lung-visual');
 
   const PHASES = ['Inhale', 'Hold', 'Exhale', 'Hold'];
   const TOTAL_ROUNDS = 4;
@@ -171,24 +198,21 @@
     boxRound = 1;
     boxPhaseLabel.textContent = 'get ready';
     boxRoundLabel.textContent = 'round 1 of 4';
-    setLungState(0.4, 0.15);
+    setLungPhaseClass(boxLungVisual, null);
     boxStartBtn.hidden = false;
     boxStartBtn.textContent = 'Begin box breathing';
   }
 
-  function setLungState(scale, fill) {
-    [boxLungLeft, boxLungRight].forEach(g => { g.style.transform = `scale(${scale})`; });
-    [boxAirLeft, boxAirRight].forEach(r => { r.style.transform = `scaleY(${fill})`; });
+  function setLungPhaseClass(visualEl, phaseAction) {
+    visualEl.classList.remove('phase-inhale', 'phase-exhale', 'phase-hold');
+    if (phaseAction) visualEl.classList.add('phase-' + phaseAction);
   }
 
   function runBoxPhase() {
     const phase = PHASES[boxPhaseIndex % 4];
     boxPhaseLabel.textContent = phase.toLowerCase();
     boxRoundLabel.textContent = `round ${boxRound} of ${TOTAL_ROUNDS}`;
-
-    if (phase === 'Inhale') setLungState(1.08, 1);
-    else if (phase === 'Exhale') setLungState(0.9, 0.22);
-    /* Hold phases: lungs stay as they are */
+    setLungPhaseClass(boxLungVisual, phase.toLowerCase());
 
     boxTimeout = setTimeout(() => {
       boxPhaseIndex += 1;
@@ -233,7 +257,6 @@
     const rateScore = scoreFromRate(session.rate ?? 16);
     const holdScore = scoreFromHold(session.hold ?? 20);
     const controlScore = Math.round((holdScore * 0.6) + (rateScore * 0.4));
-    const overall = Math.round((rateScore * 0.35) + (holdScore * 0.45) + 20 * 0.2 + 0); // baseline relaxation weight placeholder
     const overallClamped = Math.max(30, Math.min(98, Math.round((rateScore + holdScore + 80) / 3)));
     const breathingAge = Math.max(18, Math.min(70, Math.round(45 - (overallClamped - 60) * 0.4)));
     return {
@@ -264,6 +287,7 @@
     document.getElementById('score-age').textContent = scores.breathingAge;
     document.getElementById('score-control').textContent = scores.control;
     document.getElementById('score-rate').textContent = scores.rate;
+    document.getElementById('score-hold').textContent = scores.hold;
     document.getElementById('plan-text').textContent = planFor(scores);
 
     const history = loadHistory();
@@ -365,7 +389,9 @@
 
   document.getElementById('retake-btn').addEventListener('click', () => {
     heroSection.style.display = '';
+    whyMattersSection.style.display = '';
     introSection.style.display = '';
+    exercisesSection.style.display = '';
     showOnly(null);
     resetStage1();
     goToStage(1);
@@ -391,16 +417,15 @@
   const exercisePlayer = document.getElementById('exercise-player');
   const exercisePlayerTitle = document.getElementById('exercise-player-title');
   const durationPicker = document.getElementById('duration-picker');
-  const exLungLeft = document.getElementById('ex-lung-left');
-  const exLungRight = document.getElementById('ex-lung-right');
-  const exAirLeft = document.getElementById('ex-air-left');
-  const exAirRight = document.getElementById('ex-air-right');
+  const exerciseLungVisual = document.getElementById('exercise-lung-visual');
   const exercisePhaseLabel = document.getElementById('exercise-phase-label');
   const exerciseRoundLabel = document.getElementById('exercise-round-label');
+  const exerciseSessionTimer = document.getElementById('exercise-session-timer');
   const exerciseBeginBtn = document.getElementById('exercise-begin-btn');
   const exerciseExitBtn = document.getElementById('exercise-exit-btn');
   const musicToggleBtn = document.getElementById('music-toggle-btn');
-  const musicToggleLabel = document.getElementById('music-toggle-label');
+  const iconSoundOn = document.getElementById('icon-sound-on');
+  const iconSoundOff = document.getElementById('icon-sound-off');
 
   const EXERCISE_DEFS = {
     box: {
@@ -447,11 +472,8 @@
   let exPhaseIndex = 0;
   let exRound = 1;
   let selectedMinutes = 5;
-
-  function setExLungState(scale, fill) {
-    [exLungLeft, exLungRight].forEach(g => { g.style.transform = `scale(${scale})`; });
-    [exAirLeft, exAirRight].forEach(r => { r.style.transform = `scaleY(${fill})`; });
-  }
+  let sessionSecondsRemaining = 0;
+  let sessionTimerInterval = null;
 
   function openExercisePlayer(key) {
     const def = EXERCISE_DEFS[key];
@@ -464,20 +486,23 @@
     exercisePlayer.classList.add('theme-' + def.theme);
     exercisePhaseLabel.textContent = 'get ready';
     exerciseRoundLabel.textContent = '';
-    setExLungState(0.4, 0.15);
+    setLungPhaseClass(exerciseLungVisual, null);
 
     durationPicker.hidden = !def.durationPicker;
+    exerciseSessionTimer.hidden = !def.durationPicker;
     if (def.durationPicker) {
       selectedMinutes = 5;
       durationPicker.querySelectorAll('.duration-opt').forEach(btn => {
         btn.classList.toggle('selected', Number(btn.dataset.minutes) === selectedMinutes);
       });
+      exerciseSessionTimer.textContent = formatTime(selectedMinutes * 60);
     }
 
     musicToggleBtn.hidden = !def.music;
     musicEnabled = true;
     musicToggleBtn.setAttribute('aria-pressed', 'true');
-    musicToggleLabel.textContent = 'Sound on';
+    iconSoundOn.hidden = false;
+    iconSoundOff.hidden = true;
 
     exerciseBeginBtn.hidden = false;
     exerciseBeginBtn.textContent = 'Begin';
@@ -487,15 +512,23 @@
 
   function closeExercisePlayer() {
     clearTimeout(exTimeout);
+    clearInterval(sessionTimerInterval);
     stopAmbientTone();
     exercisePlayer.hidden = true;
     activeExercise = null;
+  }
+
+  function formatTime(totalSeconds) {
+    const m = Math.floor(totalSeconds / 60);
+    const s = totalSeconds % 60;
+    return m + ':' + String(s).padStart(2, '0');
   }
 
   durationPicker.querySelectorAll('.duration-opt').forEach(btn => {
     btn.addEventListener('click', () => {
       selectedMinutes = Number(btn.dataset.minutes);
       durationPicker.querySelectorAll('.duration-opt').forEach(b => b.classList.toggle('selected', b === btn));
+      exerciseSessionTimer.textContent = formatTime(selectedMinutes * 60);
     });
   });
 
@@ -503,14 +536,28 @@
     btn.addEventListener('click', () => openExercisePlayer(btn.dataset.exercise));
   });
 
-  exerciseExitBtn.addEventListener('click', closeExercisePlayer);
+  exerciseExitBtn.addEventListener('click', () => {
+    /* only confirm if a session is actually in progress (Begin was already clicked) */
+    if (exerciseBeginBtn.hidden) {
+      showConfirm('End this session now?', closeExercisePlayer);
+    } else {
+      closeExercisePlayer();
+    }
+  });
 
   exerciseBeginBtn.addEventListener('click', () => {
     const def = EXERCISE_DEFS[activeExercise];
     let rounds = def.rounds;
+    const cycleSeconds = def.phases.reduce((sum, p) => sum + p.seconds, 0);
     if (def.durationPicker) {
-      const cycleSeconds = def.phases.reduce((sum, p) => sum + p.seconds, 0);
       rounds = Math.max(3, Math.round((selectedMinutes * 60) / cycleSeconds));
+      sessionSecondsRemaining = selectedMinutes * 60;
+      exerciseSessionTimer.textContent = formatTime(sessionSecondsRemaining);
+      sessionTimerInterval = setInterval(() => {
+        sessionSecondsRemaining = Math.max(0, sessionSecondsRemaining - 1);
+        exerciseSessionTimer.textContent = formatTime(sessionSecondsRemaining);
+        if (sessionSecondsRemaining <= 0) clearInterval(sessionTimerInterval);
+      }, 1000);
     }
     exerciseBeginBtn.hidden = true;
     durationPicker.hidden = true;
@@ -522,15 +569,10 @@
     const phase = def.phases[exPhaseIndex % def.phases.length];
     exercisePhaseLabel.textContent = phase.label.toLowerCase();
     exerciseRoundLabel.textContent = `round ${exRound} of ${totalRounds}`;
+    setLungPhaseClass(exerciseLungVisual, phase.action);
 
-    if (phase.action === 'inhale') {
-      setExLungState(1.08, 1);
-      setToneLevel(0.05, phase.seconds);
-    } else if (phase.action === 'exhale') {
-      setExLungState(0.9, 0.22);
-      setToneLevel(0.015, phase.seconds);
-    }
-    /* hold: lungs and tone stay steady */
+    if (phase.action === 'inhale') setToneLevel(0.05, phase.seconds);
+    else if (phase.action === 'exhale') setToneLevel(0.015, phase.seconds);
 
     exTimeout = setTimeout(() => {
       exPhaseIndex += 1;
@@ -540,6 +582,7 @@
       if (exRound > totalRounds) {
         exercisePhaseLabel.textContent = 'well done';
         exerciseRoundLabel.textContent = '';
+        clearInterval(sessionTimerInterval);
         stopAmbientTone();
         setTimeout(closeExercisePlayer, 1600);
         return;
@@ -551,7 +594,8 @@
   musicToggleBtn.addEventListener('click', () => {
     musicEnabled = !musicEnabled;
     musicToggleBtn.setAttribute('aria-pressed', String(musicEnabled));
-    musicToggleLabel.textContent = musicEnabled ? 'Sound on' : 'Sound off';
+    iconSoundOn.hidden = !musicEnabled;
+    iconSoundOff.hidden = musicEnabled;
     if (!musicEnabled && gainNode) {
       gainNode.gain.cancelScheduledValues(audioCtx.currentTime);
       gainNode.gain.setValueAtTime(0.0001, audioCtx.currentTime);

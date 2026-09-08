@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=4">
+<link rel="stylesheet" href="styles.css?v=5">
 </head>
 <body>
 
@@ -16,6 +16,7 @@
   <div class="wrap topbar-inner">
     <a class="brand" href="./" aria-label="BreathCheck home">BreathCheck</a>
     <nav class="topnav">
+      <a href="#why-matters">Why it matters</a>
       <a href="#how-it-works">How it works</a>
       <a href="#exercises">Exercises</a>
       <a href="blog/">Blog</a>
@@ -45,30 +46,33 @@
       </div>
       <div class="hero-visual" aria-hidden="true">
         <div class="lung-stage">
-          <svg viewBox="0 0 240 260" class="lung-svg">
-            <defs>
-              <radialGradient id="volL" cx="35%" cy="30%" r="80%">
-                <stop offset="0%" stop-color="#F2F7E8"/>
-                <stop offset="55%" stop-color="#C7DFA0"/>
-                <stop offset="100%" stop-color="#7FA84A"/>
-              </radialGradient>
-              <radialGradient id="volR" cx="65%" cy="30%" r="80%">
-                <stop offset="0%" stop-color="#F2F7E8"/>
-                <stop offset="55%" stop-color="#C7DFA0"/>
-                <stop offset="100%" stop-color="#7FA84A"/>
-              </radialGradient>
-            </defs>
-            <rect x="114" y="16" width="12" height="44" rx="6" fill="#4E7A28"/>
-            <path d="M120 54 C 104 60 92 70 84 86" fill="none" stroke="#4E7A28" stroke-width="6" stroke-linecap="round"/>
-            <path d="M120 54 C 136 60 148 70 156 86" fill="none" stroke="#4E7A28" stroke-width="6" stroke-linecap="round"/>
-            <g class="lung lung-left">
-              <path d="M114 58 C 90 54 62 60 46 80 C 30 100 24 130 26 158 C 28 184 36 208 56 218 C 72 226 92 220 102 204 C 110 190 112 168 113 148 C 114 118 115 86 114 58 Z" fill="url(#volL)" stroke="#2C4E09" stroke-width="2"/>
-            </g>
-            <g class="lung lung-right">
-              <path d="M126 58 C 150 54 178 60 194 80 C 210 100 216 130 214 158 C 212 184 204 208 184 218 C 168 226 148 220 138 204 C 130 190 128 168 127 148 C 126 118 125 86 126 58 Z" fill="url(#volR)" stroke="#2C4E09" stroke-width="2"/>
-            </g>
-          </svg>
-          <p class="lung-phase-label" id="hero-phase">breathe with it</p>
+          <div class="lung-visual">
+            <div class="lung-glow"></div>
+            <img src="assets/images/lungs.png" alt="" class="lung-img">
+          </div>
+          <p class="lung-phase-label">breathe with it</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WHY IT MATTERS -->
+  <section class="why-matters" id="why-matters">
+    <div class="wrap">
+      <p class="stage-eyebrow">Before you start</p>
+      <h2>Why five minutes on your breathing is worth it</h2>
+      <div class="why-grid">
+        <div class="why-item">
+          <h3>It calms you down, fast</h3>
+          <p>Slow, controlled breathing is one of the quickest ways to shift the body out of a stressed state — no app, supplement, or waiting for it to kick in.</p>
+        </div>
+        <div class="why-item">
+          <h3>It affects your sleep</h3>
+          <p>Breathing patterns and sleep quality are closely linked. A few paced minutes before bed genuinely helps the body wind down.</p>
+        </div>
+        <div class="why-item">
+          <h3>It affects your whole day</h3>
+          <p>Fast, shallow breathing keeps the body mildly on edge without you noticing. Fixing it is one of the simplest levers for steadier energy and focus.</p>
         </div>
       </div>
     </div>
@@ -80,10 +84,11 @@
       <div class="intro-text">
         <h2>Most people breathe worse than they think.</h2>
         <p>Too fast, too shallow, or tangled up in stress patterns nobody ever points out. This test measures three things that predict all three: how you breathe at rest, how well you tolerate a breath hold, and how steady you can keep a paced rhythm.</p>
+        <p class="intro-aside">Want to skip straight to practicing instead of being scored? <a href="#exercises">Jump to the exercises</a>.</p>
       </div>
       <ol class="intro-steps">
         <li><span class="step-num">1</span><div><strong>Resting rate</strong><p>Count your breaths for 60 seconds, sitting normally.</p></div></li>
-        <li><span class="step-num">2</span><div><strong>Breath hold</strong><p>One relaxed hold, timed to the second.</p></div></li>
+        <li><span class="step-num">2</span><div><strong>Breath hold control</strong><p>One relaxed hold, stopped at the first urge to breathe — not your max.</p></div></li>
         <li><span class="step-num">3</span><div><strong>Box breathing</strong><p>Four rounds of a paced 4-4-4-4 rhythm.</p></div></li>
       </ol>
     </div>
@@ -94,20 +99,23 @@
     <div class="wrap">
       <p class="stage-eyebrow">Guided practice</p>
       <h2>Breathing exercises</h2>
-      <p class="exercises-lead">No scoring, no timer pressure. Pick one and follow the lungs — these work any time you want to reset, and one is built for winding down at night.</p>
+      <p class="exercises-lead">The test above gives you a score. These are what you actually practice — no scoring, no timer pressure. Pick the one that matches what you need right now:</p>
 
       <div class="exercise-grid">
         <div class="exercise-card">
+          <span class="exercise-tag">Best for: a quick reset</span>
           <h3>Box breathing</h3>
           <p>Four seconds in, hold, out, hold. A steady, even rhythm that's easy to learn and good before anything stressful.</p>
           <button class="btn btn-ghost" data-exercise="box">Start · 4 rounds</button>
         </div>
         <div class="exercise-card">
+          <span class="exercise-tag">Best for: settling down</span>
           <h3>4-7-8 breathing</h3>
           <p>Inhale for 4, hold for 7, exhale slowly for 8. A longer exhale that's widely used to settle the body before rest.</p>
           <button class="btn btn-ghost" data-exercise="478">Start · 4 rounds</button>
         </div>
         <div class="exercise-card exercise-card-featured">
+          <span class="exercise-tag exercise-tag-dark">Best for: falling asleep</span>
           <h3>Bedtime wind down</h3>
           <p>A longer, dimmed session with a soft ambient tone that breathes with you. Pick 3, 5, or 10 minutes and let it run.</p>
           <button class="btn btn-primary" data-exercise="bedtime">Start wind down</button>
@@ -130,47 +138,32 @@
       </div>
 
       <div class="lung-stage lung-stage-lg">
-        <svg viewBox="0 0 240 260" class="lung-svg">
-          <defs>
-            <radialGradient id="exVolL" cx="35%" cy="30%" r="80%">
-              <stop offset="0%" stop-color="#F2F7E8"/>
-              <stop offset="55%" stop-color="#C7DFA0"/>
-              <stop offset="100%" stop-color="#7FA84A"/>
-            </radialGradient>
-            <radialGradient id="exVolR" cx="65%" cy="30%" r="80%">
-              <stop offset="0%" stop-color="#F2F7E8"/>
-              <stop offset="55%" stop-color="#C7DFA0"/>
-              <stop offset="100%" stop-color="#7FA84A"/>
-            </radialGradient>
-            <linearGradient id="exFillGrad" x1="0%" y1="100%" x2="0%" y2="0%">
-              <stop offset="0%" stop-color="#2C5A0A"/>
-              <stop offset="60%" stop-color="#5B9A2E"/>
-              <stop offset="100%" stop-color="#9BCB5E"/>
-            </linearGradient>
-            <clipPath id="exClipLeft"><path d="M114 58 C 90 54 62 60 46 80 C 30 100 24 130 26 158 C 28 184 36 208 56 218 C 72 226 92 220 102 204 C 110 190 112 168 113 148 C 114 118 115 86 114 58 Z"/></clipPath>
-            <clipPath id="exClipRight"><path d="M126 58 C 150 54 178 60 194 80 C 210 100 216 130 214 158 C 212 184 204 208 184 218 C 168 226 148 220 138 204 C 130 190 128 168 127 148 C 126 118 125 86 126 58 Z"/></clipPath>
-          </defs>
-          <rect x="114" y="16" width="12" height="44" rx="6" fill="#4E7A28"/>
-          <path d="M120 54 C 104 60 92 70 84 86" fill="none" stroke="#4E7A28" stroke-width="6" stroke-linecap="round"/>
-          <path d="M120 54 C 136 60 148 70 156 86" fill="none" stroke="#4E7A28" stroke-width="6" stroke-linecap="round"/>
-          <g class="lung" id="ex-lung-left">
-            <path d="M114 58 C 90 54 62 60 46 80 C 30 100 24 130 26 158 C 28 184 36 208 56 218 C 72 226 92 220 102 204 C 110 190 112 168 113 148 C 114 118 115 86 114 58 Z" fill="url(#exVolL)" stroke="#2C4E09" stroke-width="2"/>
-            <rect class="air-fill" id="ex-air-left" x="20" y="55" width="100" height="180" fill="url(#exFillGrad)" clip-path="url(#exClipLeft)" opacity="0.88"/>
-          </g>
-          <g class="lung" id="ex-lung-right">
-            <path d="M126 58 C 150 54 178 60 194 80 C 210 100 216 130 214 158 C 212 184 204 208 184 218 C 168 226 148 220 138 204 C 130 190 128 168 127 148 C 126 118 125 86 126 58 Z" fill="url(#exVolR)" stroke="#2C4E09" stroke-width="2"/>
-            <rect class="air-fill" id="ex-air-right" x="120" y="55" width="100" height="180" fill="url(#exFillGrad)" clip-path="url(#exClipRight)" opacity="0.88"/>
-          </g>
-        </svg>
+        <div class="lung-visual" id="exercise-lung-visual">
+          <div class="lung-glow"></div>
+          <img src="assets/images/lungs.png" alt="" class="lung-img">
+        </div>
         <p class="lung-phase-label" id="exercise-phase-label">get ready</p>
         <p class="lung-round-label" id="exercise-round-label"></p>
+        <p class="session-timer" id="exercise-session-timer" hidden>5:00</p>
       </div>
 
       <div class="exercise-player-controls">
         <button class="btn btn-primary btn-lg" id="exercise-begin-btn">Begin</button>
-        <button class="music-toggle" id="music-toggle-btn" type="button" hidden aria-pressed="true">
-          <span id="music-toggle-label">Sound on</span>
+        <button class="music-toggle" id="music-toggle-btn" type="button" hidden aria-pressed="true" aria-label="Toggle ambient sound">
+          <svg id="icon-sound-on" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.5 8.5a5 5 0 0 1 0 7"></path><path d="M19 5a10 10 0 0 1 0 14"></path></svg>
+          <svg id="icon-sound-off" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" hidden><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="21" y1="9" x2="15" y2="15"></line><line x1="15" y1="9" x2="21" y2="15"></line></svg>
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONFIRM MODAL (shared) -->
+  <div class="confirm-modal" id="confirm-modal" hidden>
+    <div class="confirm-modal-box">
+      <p class="confirm-modal-text" id="confirm-modal-text">Exit now? Your progress on this session won't be saved.</p>
+      <div class="confirm-modal-actions">
+        <button class="btn btn-ghost" id="confirm-cancel-btn">Keep going</button>
+        <button class="btn btn-primary" id="confirm-exit-btn">Yes, exit</button>
       </div>
     </div>
   </div>
@@ -199,7 +192,7 @@
         </div>
       </div>
 
-      <!-- Stage 2: Breath hold -->
+      <!-- Stage 2: Breath hold control -->
       <div class="stage" id="stage-2" data-stage="2" hidden>
         <p class="stage-eyebrow">Stage 2 of 3</p>
         <h2>Breath hold control</h2>
@@ -218,38 +211,10 @@
         <p class="stage-instructions">Follow the lungs. Four seconds in, four second hold, four seconds out, four second hold. Four rounds.</p>
         <div class="stage-panel">
           <div class="lung-stage lung-stage-lg">
-            <svg viewBox="0 0 240 260" class="lung-svg">
-              <defs>
-                <radialGradient id="volL2" cx="35%" cy="30%" r="80%">
-                  <stop offset="0%" stop-color="#F2F7E8"/>
-                  <stop offset="55%" stop-color="#C7DFA0"/>
-                  <stop offset="100%" stop-color="#7FA84A"/>
-                </radialGradient>
-                <radialGradient id="volR2" cx="65%" cy="30%" r="80%">
-                  <stop offset="0%" stop-color="#F2F7E8"/>
-                  <stop offset="55%" stop-color="#C7DFA0"/>
-                  <stop offset="100%" stop-color="#7FA84A"/>
-                </radialGradient>
-                <linearGradient id="fillGrad2" x1="0%" y1="100%" x2="0%" y2="0%">
-                  <stop offset="0%" stop-color="#2C5A0A"/>
-                  <stop offset="60%" stop-color="#5B9A2E"/>
-                  <stop offset="100%" stop-color="#9BCB5E"/>
-                </linearGradient>
-                <clipPath id="clipLeft2"><path d="M114 58 C 90 54 62 60 46 80 C 30 100 24 130 26 158 C 28 184 36 208 56 218 C 72 226 92 220 102 204 C 110 190 112 168 113 148 C 114 118 115 86 114 58 Z"/></clipPath>
-                <clipPath id="clipRight2"><path d="M126 58 C 150 54 178 60 194 80 C 210 100 216 130 214 158 C 212 184 204 208 184 218 C 168 226 148 220 138 204 C 130 190 128 168 127 148 C 126 118 125 86 126 58 Z"/></clipPath>
-              </defs>
-              <rect x="114" y="16" width="12" height="44" rx="6" fill="#4E7A28"/>
-              <path d="M120 54 C 104 60 92 70 84 86" fill="none" stroke="#4E7A28" stroke-width="6" stroke-linecap="round"/>
-              <path d="M120 54 C 136 60 148 70 156 86" fill="none" stroke="#4E7A28" stroke-width="6" stroke-linecap="round"/>
-              <g class="lung box-lung-left" id="box-lung-left">
-                <path d="M114 58 C 90 54 62 60 46 80 C 30 100 24 130 26 158 C 28 184 36 208 56 218 C 72 226 92 220 102 204 C 110 190 112 168 113 148 C 114 118 115 86 114 58 Z" fill="url(#volL2)" stroke="#2C4E09" stroke-width="2"/>
-                <rect class="air-fill" id="box-air-left" x="20" y="55" width="100" height="180" fill="url(#fillGrad2)" clip-path="url(#clipLeft2)" opacity="0.88"/>
-              </g>
-              <g class="lung box-lung-right" id="box-lung-right">
-                <path d="M126 58 C 150 54 178 60 194 80 C 210 100 216 130 214 158 C 212 184 204 208 184 218 C 168 226 148 220 138 204 C 130 190 128 168 127 148 C 126 118 125 86 126 58 Z" fill="url(#volR2)" stroke="#2C4E09" stroke-width="2"/>
-                <rect class="air-fill" id="box-air-right" x="120" y="55" width="100" height="180" fill="url(#fillGrad2)" clip-path="url(#clipRight2)" opacity="0.88"/>
-              </g>
-            </svg>
+            <div class="lung-visual" id="box-lung-visual">
+              <div class="lung-glow"></div>
+              <img src="assets/images/lungs.png" alt="" class="lung-img">
+            </div>
             <p class="lung-phase-label" id="box-phase-label">get ready</p>
             <p class="lung-round-label" id="box-round-label">round 1 of 4</p>
           </div>
@@ -284,6 +249,11 @@
           <span class="score-label">Resting rate</span>
           <span class="score-value" id="score-rate">—</span>
           <span class="score-sub">breaths / min</span>
+        </div>
+        <div class="score-card">
+          <span class="score-label">Breath hold</span>
+          <span class="score-value" id="score-hold">—</span>
+          <span class="score-sub">seconds</span>
         </div>
       </div>
 
@@ -327,6 +297,6 @@
   </div>
 </footer>
 
-<script src="script.js?v=3"></script>
+<script src="script.js?v=5"></script>
 </body>
 </html>
