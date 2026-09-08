@@ -15,7 +15,7 @@
   const navCtaBtn = document.getElementById('nav-cta');
   const stageProgressFill = document.getElementById('stage-progress-fill');
 
-  const session = { rate: null, hold: null, box: true };
+  const session = { rate: null, hold: null, holdSkipped: false, box: true };
 
   function showOnly(section) {
     [assessmentSection, resultsSection].forEach(s => { if (s) s.hidden = true; });
@@ -40,6 +40,7 @@
     showOnly(assessmentSection);
     session.rate = null;
     session.hold = null;
+    session.holdSkipped = false;
     resetStage1();
     goToStage(1);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -84,6 +85,11 @@
     hideConfirm();
     if (action) action();
   });
+
+  /* ---- medical boundary info modal (simple info panel, no confirm/cancel choice) ---- */
+  const medicalModal = document.getElementById('medical-modal');
+  document.getElementById('medical-note-link').addEventListener('click', () => { medicalModal.hidden = false; });
+  document.getElementById('medical-modal-close-btn').addEventListener('click', () => { medicalModal.hidden = true; });
 
   /* Exit the scored assessment at any point — no result is saved */
   document.getElementById('exit-assessment-btn').addEventListener('click', () => {
@@ -180,6 +186,14 @@
     }
   });
 
+  document.getElementById('hold-skip-btn').addEventListener('click', () => {
+    clearInterval(holdInterval);
+    session.hold = null;
+    session.holdSkipped = true;
+    resetStage3();
+    goToStage(3);
+  });
+
   /* ================= STAGE 3: box breathing (scored assessment) ================= */
   const boxStartBtn = document.getElementById('box-start-btn');
   const boxPhaseLabel = document.getElementById('box-phase-label');
@@ -253,29 +267,85 @@
     return 30;
   }
 
+  function rateLabel(breaths) {
+    if (breaths >= 12 && breaths <= 18) return 'Good';
+    if (breaths > 18) return 'Elevated';
+    return 'Low';
+  }
+
+  function scoreLabel(score) {
+    if (score >= 85) return 'Excellent';
+    if (score >= 70) return 'Good';
+    if (score >= 55) return 'Fair';
+    return 'Room to improve';
+  }
+
   function computeScores() {
     const rateScore = scoreFromRate(session.rate ?? 16);
+    /* if the hold was skipped, use a neutral mid-value so it doesn't unfairly tank the score */
     const holdScore = scoreFromHold(session.hold ?? 20);
-    const controlScore = Math.round((holdScore * 0.6) + (rateScore * 0.4));
-    const overallClamped = Math.max(30, Math.min(98, Math.round((rateScore + holdScore + 80) / 3)));
-    const breathingAge = Math.max(18, Math.min(70, Math.round(45 - (overallClamped - 60) * 0.4)));
+    const pacedScore = Math.round((rateScore * 0.5) + (holdScore * 0.5));
+    const overall = Math.max(30, Math.min(98, Math.round((rateScore + holdScore + 80) / 3)));
+
+    const history = loadHistory();
+    const consistency = computeConsistency(history, overall);
+
     return {
       rate: session.rate ?? 16,
       hold: session.hold ?? 0,
-      control: controlScore,
-      overall: overallClamped,
-      breathingAge
+      holdSkipped: !!session.holdSkipped,
+      rateScore,
+      holdScore,
+      pacedScore,
+      consistency,
+      overall
     };
   }
 
-  function planFor(scores) {
-    if (scores.overall >= 80) {
-      return 'Strong session. Try advanced coherence breathing (5.5 breaths per minute) for five minutes today to build on this.';
+  function computeConsistency(history, todayOverall) {
+    const recent = history.slice(-4).map(h => h.overall).concat([todayOverall]);
+    if (recent.length < 3) return null; /* not enough sessions yet to judge consistency */
+    const avg = recent.reduce((a, b) => a + b, 0) / recent.length;
+    const variance = recent.reduce((a, b) => a + Math.abs(b - avg), 0) / recent.length;
+    return Math.max(30, Math.min(95, Math.round(92 - variance * 2)));
+  }
+
+  function verdictText(overall) {
+    if (overall >= 80) return 'Your breathing is looking strong.';
+    if (overall >= 60) return 'Your breathing is looking good.';
+    if (overall >= 45) return 'Your breathing has some room to improve.';
+    return "There's a clear opportunity to improve your breathing.";
+  }
+
+  function weakestArea(scores) {
+    const areas = [
+      { key: 'rate', name: 'resting rate', score: scores.rateScore, exercise: '478' },
+      { key: 'control', name: 'breath control', score: scores.holdScore, exercise: '478' },
+      { key: 'paced', name: 'paced breathing', score: scores.pacedScore, exercise: 'box' }
+    ];
+    /* exclude the hold-derived areas from being singled out if the test was skipped —
+       we don't have a real reading to base a recommendation on */
+    const usable = scores.holdSkipped ? areas.filter(a => a.key !== 'control') : areas;
+    usable.sort((a, b) => a.score - b.score);
+    return { weak: usable[0], strong: usable[usable.length - 1] };
+  }
+
+  function buildInterpretation(scores) {
+    const { weak, strong } = weakestArea(scores);
+    if (weak.name === strong.name) {
+      return `Your ${strong.name} looked steady today.`;
     }
-    if (scores.rate > 18 || scores.hold < 20) {
-      return 'Your breathing is running a little fast or shallow today. Five minutes of slow diaphragmatic breathing this evening will help more than anything else.';
-    }
-    return 'Solid baseline. A short box-breathing session before anything stressful today will keep this steady.';
+    return `Your ${strong.name} looked solid today. Your main opportunity right now is your ${weak.name}.`;
+  }
+
+  function nextStepFor(scores) {
+    const { weak } = weakestArea(scores);
+    const map = {
+      'resting rate': { text: 'Try 5 minutes of slow 4-7-8 breathing today to bring your resting rate down.', exercise: '478' },
+      'breath control': { text: 'Practice 4-7-8 breathing today to build a bit more breath control.', exercise: '478' },
+      'paced breathing': { text: 'Try box breathing today to sharpen your paced rhythm.', exercise: 'box' }
+    };
+    return map[weak.name] || map['paced breathing'];
   }
 
   /* ================= RESULTS + STORAGE ================= */
@@ -284,23 +354,49 @@
     const scores = computeScores();
 
     document.getElementById('score-overall').textContent = scores.overall;
-    document.getElementById('score-age').textContent = scores.breathingAge;
-    document.getElementById('score-control').textContent = scores.control;
-    document.getElementById('score-rate').textContent = scores.rate;
-    document.getElementById('score-hold').textContent = scores.hold;
-    document.getElementById('plan-text').textContent = planFor(scores);
+    document.getElementById('result-verdict').textContent = verdictText(scores.overall);
+    document.getElementById('result-interpretation').textContent = buildInterpretation(scores);
+
+    document.getElementById('row-rate-value').textContent = scores.rate;
+    document.getElementById('row-rate-label').textContent = rateLabel(scores.rate);
+
+    if (scores.holdSkipped) {
+      document.getElementById('row-control-value').textContent = 'Skipped';
+      document.getElementById('row-control-sub').textContent = '';
+      document.getElementById('row-control-label').textContent = 'Skipped for safety';
+    } else {
+      document.getElementById('row-control-value').textContent = scores.holdScore + '/100';
+      document.getElementById('row-control-sub').textContent = scores.hold + 's hold';
+      document.getElementById('row-control-label').textContent = scoreLabel(scores.holdScore);
+    }
+
+    document.getElementById('row-paced-value').textContent = scores.pacedScore + '/100';
+    document.getElementById('row-paced-label').textContent = scoreLabel(scores.pacedScore);
+
+    if (scores.consistency === null) {
+      document.getElementById('row-consistency-value').textContent = '—';
+      document.getElementById('row-consistency-label').textContent = 'Not enough data yet';
+    } else {
+      document.getElementById('row-consistency-value').textContent = scores.consistency + '/100';
+      document.getElementById('row-consistency-label').textContent = scoreLabel(scores.consistency);
+    }
+
+    const nextStep = nextStepFor(scores);
+    document.getElementById('next-step-text').textContent = nextStep.text;
+    const nextStepBtn = document.getElementById('next-step-btn');
+    nextStepBtn.onclick = () => openExercisePlayer(nextStep.exercise);
 
     const history = loadHistory();
     const today = todayKey();
-    const yesterday = history.find(h => h.date === yesterdayKey());
+    const recentAvg = recentAverage(history, today, 7);
 
     const comparePanel = document.getElementById('compare-panel');
     const compareRows = document.getElementById('compare-rows');
-    if (yesterday) {
+    if (recentAvg) {
       comparePanel.hidden = false;
       compareRows.innerHTML = '';
-      addCompareRow(compareRows, 'Overall wellness', yesterday.overall, scores.overall);
-      addCompareRow(compareRows, 'Breath hold', yesterday.hold, scores.hold, 's');
+      addCompareRow(compareRows, 'Overall wellness', recentAvg.overall, scores.overall);
+      if (!scores.holdSkipped) addCompareRow(compareRows, 'Breath hold', recentAvg.hold, scores.hold, 's');
     } else {
       comparePanel.hidden = true;
     }
@@ -309,6 +405,14 @@
     renderProgress();
     navProgressLink.hidden = false;
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function recentAverage(history, excludeDateKey, days) {
+    const relevant = history.filter(h => h.date !== excludeDateKey).slice(-days);
+    if (!relevant.length) return null;
+    const avgOverall = relevant.reduce((a, h) => a + h.overall, 0) / relevant.length;
+    const avgHold = relevant.reduce((a, h) => a + (h.hold || 0), 0) / relevant.length;
+    return { overall: Math.round(avgOverall), hold: Math.round(avgHold * 10) / 10 };
   }
 
   function addCompareRow(container, label, prev, curr, suffix) {
@@ -342,7 +446,7 @@
 
   function saveTodayEntry(dateKey, scores) {
     const history = loadHistory().filter(h => h.date !== dateKey);
-    history.push({ date: dateKey, overall: scores.overall, hold: scores.hold, control: scores.control, breathingAge: scores.breathingAge });
+    history.push({ date: dateKey, overall: scores.overall, hold: scores.holdSkipped ? 0 : scores.hold, control: scores.holdScore, rateScore: scores.rateScore });
     history.sort((a, b) => a.date.localeCompare(b.date));
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
@@ -393,6 +497,9 @@
     introSection.style.display = '';
     exercisesSection.style.display = '';
     showOnly(null);
+    session.rate = null;
+    session.hold = null;
+    session.holdSkipped = false;
     resetStage1();
     goToStage(1);
     showOnly(assessmentSection);

@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=5">
+<link rel="stylesheet" href="styles.css?v=6">
 </head>
 <body>
 
@@ -33,7 +33,7 @@
     <div class="wrap hero-grid">
       <div class="hero-copy">
         <h1>How well are you breathing right now?</h1>
-        <p class="lead">A three-minute guided check. Three quick stages, one honest read on your breathing control, and a plan for tomorrow.</p>
+        <p class="lead">A 3-minute breathing check that helps you understand your patterns, then gives you a simple exercise to practice.</p>
         <div class="hero-actions">
           <button class="btn btn-primary" id="start-test-btn">Start breathing test</button>
           <a href="#how-it-works" class="btn btn-ghost">See how it works</a>
@@ -82,8 +82,8 @@
   <section class="intro" id="how-it-works">
     <div class="wrap intro-grid">
       <div class="intro-text">
-        <h2>Most people breathe worse than they think.</h2>
-        <p>Too fast, too shallow, or tangled up in stress patterns nobody ever points out. This test measures three things that predict all three: how you breathe at rest, how well you tolerate a breath hold, and how steady you can keep a paced rhythm.</p>
+        <h2>Your breathing may be different from what you expect.</h2>
+        <p>Fast, shallow, or tangled up in stress patterns that are easy to miss on your own. The check looks at three simple aspects of your breathing: resting rate, breath control, and paced breathing.</p>
         <p class="intro-aside">Want to skip straight to practicing instead of being scored? <a href="#exercises">Jump to the exercises</a>.</p>
       </div>
       <ol class="intro-steps">
@@ -157,6 +157,17 @@
     </div>
   </div>
 
+  <!-- MEDICAL BOUNDARY INFO MODAL -->
+  <div class="confirm-modal" id="medical-modal" hidden>
+    <div class="confirm-modal-box">
+      <p class="confirm-modal-text">BreathCheck is not designed to assess sudden or severe breathing problems. If you're having severe difficulty breathing, chest pain, fainting, or blue or grey lips, seek urgent medical care now.</p>
+      <p class="confirm-modal-text confirm-modal-text-muted">This tool offers general wellness information and self-guided practice, not a diagnosis or medical advice.</p>
+      <div class="confirm-modal-actions">
+        <button class="btn btn-primary" id="medical-modal-close-btn">Got it</button>
+      </div>
+    </div>
+  </div>
+
   <!-- CONFIRM MODAL (shared) -->
   <div class="confirm-modal" id="confirm-modal" hidden>
     <div class="confirm-modal-box">
@@ -179,11 +190,14 @@
         <button class="exit-btn" id="exit-assessment-btn" type="button">Exit test</button>
       </div>
 
+      <button class="medical-note-link" id="medical-note-link" type="button">Not medical advice</button>
+
       <!-- Stage 1: Resting rate -->
       <div class="stage" id="stage-1" data-stage="1">
         <p class="stage-eyebrow">Stage 1 of 3</p>
         <h2>Resting breathing rate</h2>
         <p class="stage-instructions">Sit comfortably. Tap the button once for every full breath (in and out counts as one) for 60 seconds.</p>
+        <p class="stage-why">Why: this gives us a baseline for how quickly you're breathing while relaxed.</p>
         <div class="stage-panel">
           <div class="timer-display" id="rate-timer">60</div>
           <div class="tap-count"><span id="rate-count">0</span> breaths</div>
@@ -197,10 +211,23 @@
         <p class="stage-eyebrow">Stage 2 of 3</p>
         <h2>Breath hold control</h2>
         <p class="stage-instructions">Breathe normally, then let a normal exhale happen and hold. Stop at the very first urge to breathe — not your maximum. This is a control test, not an endurance test.</p>
+
+        <div class="safety-note">
+          <p class="safety-note-title">Before you hold</p>
+          <ul>
+            <li>This is a gentle control check, not an endurance test.</li>
+            <li>Never hyperventilate before holding your breath.</li>
+            <li>Stay seated. Don't do this in water or while driving.</li>
+            <li>Stop immediately if you feel dizzy, faint, or unwell.</li>
+            <li>Don't try to beat a previous time — that's not what this measures.</li>
+          </ul>
+        </div>
+
         <div class="stage-panel">
           <div class="timer-display" id="hold-timer">0.0s</div>
           <button class="btn btn-primary btn-lg" id="hold-toggle-btn">Start hold</button>
           <p class="stage-hint">Stop as soon as you feel the first urge to breathe, a swallow reflex, or your throat or belly contract.</p>
+          <button class="skip-link" id="hold-skip-btn" type="button">Skip breath-hold</button>
         </div>
       </div>
 
@@ -209,6 +236,7 @@
         <p class="stage-eyebrow">Stage 3 of 3</p>
         <h2>Box breathing</h2>
         <p class="stage-instructions">Follow the lungs. Four seconds in, four second hold, four seconds out, four second hold. Four rounds.</p>
+        <p class="stage-why">Why: this checks how easily you can follow a controlled rhythm — not how deeply you can breathe.</p>
         <div class="stage-panel">
           <div class="lung-stage lung-stage-lg">
             <div class="lung-visual" id="box-lung-visual">
@@ -227,44 +255,54 @@
 
   <!-- RESULTS -->
   <section class="results" id="results" hidden>
-    <div class="wrap">
+    <div class="wrap wrap-narrow-results">
       <p class="stage-eyebrow">Your results</p>
-      <h2>Today's breathing snapshot</h2>
+      <h2>Your breathing snapshot</h2>
 
-      <div class="score-grid">
-        <div class="score-card score-card-lg">
-          <span class="score-label">Overall wellness</span>
-          <span class="score-value" id="score-overall">—</span>
-          <span class="score-sub">out of 100</span>
-        </div>
-        <div class="score-card">
-          <span class="score-label">Breathing age</span>
-          <span class="score-value" id="score-age">—</span>
-        </div>
-        <div class="score-card">
-          <span class="score-label">Control score</span>
-          <span class="score-value" id="score-control">—</span>
-        </div>
-        <div class="score-card">
-          <span class="score-label">Resting rate</span>
-          <span class="score-value" id="score-rate">—</span>
-          <span class="score-sub">breaths / min</span>
-        </div>
-        <div class="score-card">
-          <span class="score-label">Breath hold</span>
-          <span class="score-value" id="score-hold">—</span>
-          <span class="score-sub">seconds</span>
-        </div>
+      <div class="result-hero">
+        <span class="result-score" id="score-overall">—</span>
+        <span class="result-score-sub">out of 100</span>
+        <p class="result-verdict" id="result-verdict">—</p>
+        <p class="result-interpretation" id="result-interpretation">—</p>
       </div>
 
+      <table class="result-table">
+        <thead>
+          <tr><th>Area</th><th>Result</th><th>Interpretation</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Resting rate</td>
+            <td><span class="result-value" id="row-rate-value">—</span><span class="result-subvalue">breaths / min</span></td>
+            <td id="row-rate-label">—</td>
+          </tr>
+          <tr>
+            <td>Breath control</td>
+            <td><span class="result-value" id="row-control-value">—</span><span class="result-subvalue" id="row-control-sub"></span></td>
+            <td id="row-control-label">—</td>
+          </tr>
+          <tr>
+            <td>Paced breathing</td>
+            <td><span class="result-value" id="row-paced-value">—</span></td>
+            <td id="row-paced-label">—</td>
+          </tr>
+          <tr>
+            <td>Consistency</td>
+            <td><span class="result-value" id="row-consistency-value">—</span></td>
+            <td id="row-consistency-label">—</td>
+          </tr>
+        </tbody>
+      </table>
+
       <div class="compare-panel" id="compare-panel" hidden>
-        <p class="compare-title">Today vs yesterday</p>
+        <p class="compare-title">Today vs your recent average</p>
         <div class="compare-rows" id="compare-rows"></div>
       </div>
 
-      <div class="plan-panel">
-        <p class="plan-title">Today's recommendation</p>
-        <p class="plan-text" id="plan-text">—</p>
+      <div class="next-step-panel">
+        <p class="next-step-eyebrow">Your next step</p>
+        <p class="next-step-text" id="next-step-text">—</p>
+        <button class="btn btn-primary btn-lg" id="next-step-btn">Start exercise →</button>
       </div>
 
       <button class="btn btn-ghost" id="retake-btn">Take the test again</button>
@@ -297,6 +335,6 @@
   </div>
 </footer>
 
-<script src="script.js?v=5"></script>
+<script src="script.js?v=6"></script>
 </body>
 </html>
