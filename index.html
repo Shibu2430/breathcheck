@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BreathCheck — Understand your breathing</title>
-<meta name="description" content="A 3-minute guided breathing assessment. Discover your breathing age, control score, and relaxation level, then track your progress daily.">
+<title>BreathCheck — A breathing companion for your workday</title>
+<meta name="description" content="Short, approachable breathing check-ins and exercises built around a busy workday — for developers, IT professionals, and anyone who spends the day at a screen.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=6">
+<link rel="stylesheet" href="styles.css?v=8">
 </head>
 <body>
 
@@ -32,8 +32,9 @@
   <section class="hero">
     <div class="wrap hero-grid">
       <div class="hero-copy">
-        <h1>How well are you breathing right now?</h1>
-        <p class="lead">A 3-minute breathing check that helps you understand your patterns, then gives you a simple exercise to practice.</p>
+        <p class="hero-tagline">A breathing companion for your workday</p>
+        <h1>Check in. Reset. Get back to work.</h1>
+        <p class="lead">Your workday is busy. BreathCheck gives you a 3-minute check-in and a short guided exercise that fits around meetings, deadlines, and long stretches at your desk.</p>
         <div class="hero-actions">
           <button class="btn btn-primary" id="start-test-btn">Start breathing test</button>
           <a href="#how-it-works" class="btn btn-ghost">See how it works</a>
@@ -43,6 +44,7 @@
           <div><dt>3</dt><dd>stages</dd></div>
           <div><dt>0</dt><dd>signup required</dd></div>
         </dl>
+        <p class="hero-audience">Built for developers, IT professionals, designers, and anyone who spends the day at a screen.</p>
       </div>
       <div class="hero-visual" aria-hidden="true">
         <div class="lung-stage">
@@ -63,17 +65,59 @@
       <h2>Why five minutes on your breathing is worth it</h2>
       <div class="why-grid">
         <div class="why-item">
-          <h3>It calms you down, fast</h3>
-          <p>Slow, controlled breathing is one of the quickest ways to shift the body out of a stressed state — no app, supplement, or waiting for it to kick in.</p>
+          <h3>Gets you through stressful moments</h3>
+          <p>A rough meeting, a tight deadline, an urgent issue — slow breathing is one of the fastest ways to steady yourself, right at your desk.</p>
         </div>
         <div class="why-item">
-          <h3>It affects your sleep</h3>
-          <p>Breathing patterns and sleep quality are closely linked. A few paced minutes before bed genuinely helps the body wind down.</p>
+          <h3>Helps you switch off after work</h3>
+          <p>Screen time doesn't come with a natural stopping point. A few minutes of paced breathing helps mark the transition out of work mode.</p>
         </div>
         <div class="why-item">
-          <h3>It affects your whole day</h3>
-          <p>Fast, shallow breathing keeps the body mildly on edge without you noticing. Fixing it is one of the simplest levers for steadier energy and focus.</p>
+          <h3>Keeps you steadier all day</h3>
+          <p>Fast, shallow breathing creeps in during focused work without you noticing. Fixing it is one of the simplest levers for steadier energy through a long day.</p>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BUILT AROUND YOUR WORKDAY -->
+  <section class="workday" id="workday">
+    <div class="wrap">
+      <p class="stage-eyebrow">Built around your workday</p>
+      <h2>What do you need right now?</h2>
+      <p class="workday-lead">You shouldn't have to think "I want to practice a breathing technique." Just match the moment you're in:</p>
+
+      <div class="workday-grid">
+        <button class="workday-card" type="button" data-exercise="box">
+          <span class="workday-situation">Starting a difficult task</span>
+          <span class="workday-need">Focus</span>
+          <span class="workday-response">Box breathing →</span>
+        </button>
+        <button class="workday-card" type="button" data-exercise="coherent">
+          <span class="workday-situation">Back-to-back meetings</span>
+          <span class="workday-need">Reset</span>
+          <span class="workday-response">Slow, steady breathing →</span>
+        </button>
+        <button class="workday-card" type="button" data-exercise="coherent">
+          <span class="workday-situation">Deadline or stressful moment</span>
+          <span class="workday-need">Calm</span>
+          <span class="workday-response">Slow, steady breathing →</span>
+        </button>
+        <button class="workday-card" type="button" data-exercise="diaphragmatic">
+          <span class="workday-situation">Long stretch at your desk</span>
+          <span class="workday-need">Reconnect</span>
+          <span class="workday-response">Diaphragmatic breathing →</span>
+        </button>
+        <button class="workday-card" type="button" data-exercise="bedtime">
+          <span class="workday-situation">End of the workday</span>
+          <span class="workday-need">Switch off</span>
+          <span class="workday-response">Bedtime wind down →</span>
+        </button>
+        <button class="workday-card" type="button" data-exercise="478">
+          <span class="workday-situation">Preparing for sleep</span>
+          <span class="workday-need">Relax</span>
+          <span class="workday-response">4-7-8 breathing →</span>
+        </button>
       </div>
     </div>
   </section>
@@ -83,7 +127,7 @@
     <div class="wrap intro-grid">
       <div class="intro-text">
         <h2>Your breathing may be different from what you expect.</h2>
-        <p>Fast, shallow, or tangled up in stress patterns that are easy to miss on your own. The check looks at three simple aspects of your breathing: resting rate, breath control, and paced breathing.</p>
+        <p>Long stretches at a screen change how you breathe without you noticing — fast, shallow, or tangled up in stress patterns that are easy to miss on your own. The check looks at three simple aspects of your breathing: resting rate, breath control, and paced breathing.</p>
         <p class="intro-aside">Want to skip straight to practicing instead of being scored? <a href="#exercises">Jump to the exercises</a>.</p>
       </div>
       <ol class="intro-steps">
@@ -96,6 +140,7 @@
 
   <!-- EXERCISES -->
   <section class="exercises" id="exercises">
+
     <div class="wrap">
       <p class="stage-eyebrow">Guided practice</p>
       <h2>Breathing exercises</h2>
@@ -113,6 +158,18 @@
           <h3>4-7-8 breathing</h3>
           <p>Inhale for 4, hold for 7, exhale slowly for 8. A longer exhale that's widely used to settle the body before rest.</p>
           <button class="btn btn-ghost" data-exercise="478">Start · 4 rounds</button>
+        </div>
+        <div class="exercise-card">
+          <span class="exercise-tag">Best for: a calm reset</span>
+          <h3>Slow, steady breathing</h3>
+          <p>An easy, even rhythm with no holds — just smooth in, smooth out. Good for keeping a good baseline steady.</p>
+          <button class="btn btn-ghost" data-exercise="coherent">Start · 5 min</button>
+        </div>
+        <div class="exercise-card">
+          <span class="exercise-tag">Best for: after a long stretch at your desk</span>
+          <h3>Diaphragmatic breathing</h3>
+          <p>Breathe naturally at your own pace — notice your belly rise and fall. No need to force it or breathe deeply.</p>
+          <button class="btn btn-ghost" data-exercise="diaphragmatic">Start · 3 min</button>
         </div>
         <div class="exercise-card exercise-card-featured">
           <span class="exercise-tag exercise-tag-dark">Best for: falling asleep</span>
@@ -153,6 +210,17 @@
           <svg id="icon-sound-on" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.5 8.5a5 5 0 0 1 0 7"></path><path d="M19 5a10 10 0 0 1 0 14"></path></svg>
           <svg id="icon-sound-off" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" hidden><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="21" y1="9" x2="15" y2="15"></line><line x1="15" y1="9" x2="21" y2="15"></line></svg>
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CALCULATION INFO MODAL -->
+  <div class="confirm-modal" id="calc-modal" hidden>
+    <div class="confirm-modal-box">
+      <p class="confirm-modal-text">Your overall score blends three simple checks: your resting breathing rate, a gentle breath-hold control check, and how steadily you followed a paced breathing rhythm.</p>
+      <p class="confirm-modal-text confirm-modal-text-muted">It's a self-guided trend indicator to help you notice patterns over time — not a medical or diagnostic measurement.</p>
+      <div class="confirm-modal-actions">
+        <button class="btn btn-primary" id="calc-modal-close-btn">Got it</button>
       </div>
     </div>
   </div>
@@ -261,38 +329,56 @@
 
       <div class="result-hero">
         <span class="result-score" id="score-overall">—</span>
-        <span class="result-score-sub">out of 100</span>
-        <p class="result-verdict" id="result-verdict">—</p>
-        <p class="result-interpretation" id="result-interpretation">—</p>
+        <span class="result-score-sub" id="score-overall-sub">out of 100</span>
+        <p class="result-descriptor" id="result-descriptor">—</p>
+        <button class="calc-link" id="calc-link" type="button">How is this calculated?</button>
       </div>
 
-      <table class="result-table">
-        <thead>
-          <tr><th>Area</th><th>Result</th><th>Interpretation</th></tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Resting rate</td>
-            <td><span class="result-value" id="row-rate-value">—</span><span class="result-subvalue">breaths / min</span></td>
-            <td id="row-rate-label">—</td>
-          </tr>
-          <tr>
-            <td>Breath control</td>
-            <td><span class="result-value" id="row-control-value">—</span><span class="result-subvalue" id="row-control-sub"></span></td>
-            <td id="row-control-label">—</td>
-          </tr>
-          <tr>
-            <td>Paced breathing</td>
-            <td><span class="result-value" id="row-paced-value">—</span></td>
-            <td id="row-paced-label">—</td>
-          </tr>
-          <tr>
-            <td>Consistency</td>
-            <td><span class="result-value" id="row-consistency-value">—</span></td>
-            <td id="row-consistency-label">—</td>
-          </tr>
-        </tbody>
-      </table>
+      <p class="result-verdict" id="result-verdict">—</p>
+
+      <div class="area-chips" id="area-chips">
+        <div class="area-chip area-chip-strong">
+          <span class="area-chip-dot">🟢</span>
+          <span class="area-chip-text"><strong id="strong-area-name">—</strong> — <span id="strong-area-score">—</span></span>
+          <span class="area-chip-label">Your strongest area</span>
+        </div>
+        <div class="area-chip area-chip-weak">
+          <span class="area-chip-dot">🟡</span>
+          <span class="area-chip-text"><strong id="weak-area-name">—</strong></span>
+          <span class="area-chip-label">Worth practicing</span>
+        </div>
+      </div>
+
+      <div class="metric-row">
+        <div class="metric-card">
+          <span class="metric-label">Control</span>
+          <span class="metric-value" id="row-control-value">—</span>
+          <span class="metric-context" id="row-control-label">—</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-label">Resting rate</span>
+          <span class="metric-value" id="row-rate-value">—</span>
+          <span class="metric-context" id="row-rate-label">—</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-label">Breath hold</span>
+          <span class="metric-value" id="row-hold-value">—</span>
+          <span class="metric-context" id="row-hold-label">Gentle control check</span>
+        </div>
+      </div>
+
+      <div class="secondary-metrics">
+        <div class="secondary-metric-row">
+          <span>Paced breathing</span>
+          <span class="secondary-metric-value" id="row-paced-value">—</span>
+          <span class="secondary-metric-context" id="row-paced-label">—</span>
+        </div>
+        <div class="secondary-metric-row">
+          <span>Consistency</span>
+          <span class="secondary-metric-value" id="row-consistency-value">—</span>
+          <span class="secondary-metric-context" id="row-consistency-label">—</span>
+        </div>
+      </div>
 
       <div class="compare-panel" id="compare-panel" hidden>
         <p class="compare-title">Today vs your recent average</p>
@@ -300,10 +386,13 @@
       </div>
 
       <div class="next-step-panel">
-        <p class="next-step-eyebrow">Your next step</p>
+        <p class="next-step-eyebrow" id="next-step-eyebrow">Your next step</p>
         <p class="next-step-text" id="next-step-text">—</p>
+        <p class="next-step-sub" id="next-step-sub"></p>
         <button class="btn btn-primary btn-lg" id="next-step-btn">Start exercise →</button>
       </div>
+
+      <button class="progress-cta" id="progress-cta-link" type="button">Want to see how you're improving? <span>View your progress →</span></button>
 
       <button class="btn btn-ghost" id="retake-btn">Take the test again</button>
     </div>
@@ -335,6 +424,6 @@
   </div>
 </footer>
 
-<script src="script.js?v=6"></script>
+<script src="script.js?v=8"></script>
 </body>
 </html>

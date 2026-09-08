@@ -2,10 +2,25 @@
   'use strict';
 
   const STORAGE_KEY = 'breathcheck_history_v1';
+  const EVENTS_KEY = 'breathcheck_events_v1';
+
+  /* Lightweight local funnel tracking — no third-party service, no signup needed.
+     Stored per-browser only; useful for you to eyeball your own usage patterns
+     during early testing (open devtools console: JSON.parse(localStorage.getItem('breathcheck_events_v1'))).
+     It does NOT aggregate across visitors — for real cross-user analytics,
+     a connected service (e.g. Plausible, Fathom) would need to be wired in later. */
+  function logEvent(name, meta) {
+    try {
+      const events = JSON.parse(localStorage.getItem(EVENTS_KEY) || '[]');
+      events.push({ name, meta: meta || null, ts: Date.now() });
+      localStorage.setItem(EVENTS_KEY, JSON.stringify(events.slice(-500)));
+    } catch (e) { /* storage unavailable, ignore */ }
+  }
 
   /* ---------- section refs ---------- */
   const heroSection = document.querySelector('.hero');
   const whyMattersSection = document.getElementById('why-matters');
+  const workdaySection = document.getElementById('workday');
   const introSection = document.getElementById('how-it-works');
   const exercisesSection = document.getElementById('exercises');
   const assessmentSection = document.getElementById('assessment');
@@ -33,8 +48,10 @@
   }
 
   function startAssessment() {
+    logEvent('test_started');
     heroSection.style.display = 'none';
     whyMattersSection.style.display = 'none';
+    workdaySection.style.display = 'none';
     introSection.style.display = 'none';
     exercisesSection.style.display = 'none';
     showOnly(assessmentSection);
@@ -49,6 +66,7 @@
   function returnToHome() {
     heroSection.style.display = '';
     whyMattersSection.style.display = '';
+    workdaySection.style.display = '';
     introSection.style.display = '';
     exercisesSection.style.display = '';
     showOnly(null);
@@ -90,6 +108,11 @@
   const medicalModal = document.getElementById('medical-modal');
   document.getElementById('medical-note-link').addEventListener('click', () => { medicalModal.hidden = false; });
   document.getElementById('medical-modal-close-btn').addEventListener('click', () => { medicalModal.hidden = true; });
+
+  /* ---- "how is this calculated" info modal ---- */
+  const calcModal = document.getElementById('calc-modal');
+  document.getElementById('calc-link').addEventListener('click', () => { calcModal.hidden = false; });
+  document.getElementById('calc-modal-close-btn').addEventListener('click', () => { calcModal.hidden = true; });
 
   /* Exit the scored assessment at any point — no result is saved */
   document.getElementById('exit-assessment-btn').addEventListener('click', () => {
@@ -148,6 +171,7 @@
 
   function finishStage1() {
     session.rate = rateBreaths;
+    logEvent('stage1_completed', { rate: rateBreaths });
     resetStage2();
     goToStage(2);
   }
@@ -182,6 +206,7 @@
       const elapsed = (performance.now() - holdStart) / 1000;
       holdTimerEl.textContent = elapsed.toFixed(1) + 's';
       session.hold = Math.round(elapsed * 10) / 10;
+      logEvent('stage2_completed', { hold: session.hold });
       setTimeout(() => { resetStage3(); goToStage(3); }, 700);
     }
   });
@@ -190,6 +215,7 @@
     clearInterval(holdInterval);
     session.hold = null;
     session.holdSkipped = true;
+    logEvent('stage2_skipped');
     resetStage3();
     goToStage(3);
   });
@@ -236,6 +262,7 @@
       if (boxRound > TOTAL_ROUNDS) {
         boxPhaseLabel.textContent = 'well done';
         session.box = true;
+        logEvent('stage3_completed');
         setTimeout(showResults, 900);
         return;
       }
@@ -265,12 +292,6 @@
     if (seconds >= 20) return 68;
     if (seconds >= 10) return 50;
     return 30;
-  }
-
-  function rateLabel(breaths) {
-    if (breaths >= 12 && breaths <= 18) return 'Good';
-    if (breaths > 18) return 'Elevated';
-    return 'Low';
   }
 
   function scoreLabel(score) {
@@ -310,11 +331,24 @@
     return Math.max(30, Math.min(95, Math.round(92 - variance * 2)));
   }
 
-  function verdictText(overall) {
-    if (overall >= 80) return 'Your breathing is looking strong.';
-    if (overall >= 60) return 'Your breathing is looking good.';
-    if (overall >= 45) return 'Your breathing has some room to improve.';
-    return "There's a clear opportunity to improve your breathing.";
+  function overallDescriptor(overall) {
+    if (overall >= 80) return 'Strong';
+    if (overall >= 60) return 'Good';
+    if (overall >= 45) return 'Fair';
+    return 'Needs attention';
+  }
+
+  function verdictText(overall, weakName, strongName) {
+    if (overall >= 80) return `Your breathing looks strong today. Your strongest area was ${strongName}.`;
+    if (overall >= 60) return `Your breathing is looking good today. Your strongest area was ${strongName}.`;
+    if (overall >= 45) return `Your breathing has some room to improve today, mainly around ${weakName}.`;
+    return `There's a clear opportunity to improve today, mainly around ${weakName}.`;
+  }
+
+  function rateContext(breaths) {
+    if (breaths >= 12 && breaths <= 18) return 'Steady';
+    if (breaths > 18) return 'A bit fast today';
+    return 'Slower than typical';
   }
 
   function weakestArea(scores) {
@@ -330,20 +364,22 @@
     return { weak: usable[0], strong: usable[usable.length - 1] };
   }
 
-  function buildInterpretation(scores) {
-    const { weak, strong } = weakestArea(scores);
-    if (weak.name === strong.name) {
-      return `Your ${strong.name} looked steady today.`;
-    }
-    return `Your ${strong.name} looked solid today. Your main opportunity right now is your ${weak.name}.`;
-  }
-
   function nextStepFor(scores) {
-    const { weak } = weakestArea(scores);
+    const { weak, strong } = weakestArea(scores);
+    /* when the overall session was strong, recommend maintaining it rather than
+       chasing whichever of three close scores happened to be mathematically lowest */
+    if (scores.overall >= 75) {
+      return {
+        eyebrow: 'Build on your strong breathing today',
+        text: 'Try slow, steady breathing.',
+        sub: '5 minutes · about 5.5 breaths a minute',
+        exercise: 'coherent'
+      };
+    }
     const map = {
-      'resting rate': { text: 'Try 5 minutes of slow 4-7-8 breathing today to bring your resting rate down.', exercise: '478' },
-      'breath control': { text: 'Practice 4-7-8 breathing today to build a bit more breath control.', exercise: '478' },
-      'paced breathing': { text: 'Try box breathing today to sharpen your paced rhythm.', exercise: 'box' }
+      'resting rate': { eyebrow: 'Focus on your resting rate', text: 'Try slow, steady breathing to help bring your resting rate down.', sub: '5 minutes · about 5.5 breaths a minute', exercise: 'coherent' },
+      'breath control': { eyebrow: 'Focus on your breath control', text: 'Practice 4-7-8 breathing to build a bit more control.', sub: '4 rounds · about 2 minutes', exercise: '478' },
+      'paced breathing': { eyebrow: 'Focus on your paced breathing', text: 'Try box breathing to sharpen your paced rhythm.', sub: '4 rounds · about 1 minute', exercise: 'box' }
     };
     return map[weak.name] || map['paced breathing'];
   }
@@ -352,23 +388,30 @@
   function showResults() {
     showOnly(resultsSection);
     const scores = computeScores();
+    const { weak, strong } = weakestArea(scores);
+    logEvent('result_viewed', { overall: scores.overall });
 
     document.getElementById('score-overall').textContent = scores.overall;
-    document.getElementById('result-verdict').textContent = verdictText(scores.overall);
-    document.getElementById('result-interpretation').textContent = buildInterpretation(scores);
+    document.getElementById('result-descriptor').textContent = overallDescriptor(scores.overall);
+    document.getElementById('result-verdict').textContent = verdictText(scores.overall, weak.name, strong.name);
+
+    document.getElementById('strong-area-name').textContent = strong.name.charAt(0).toUpperCase() + strong.name.slice(1);
+    document.getElementById('strong-area-score').textContent = strong.score + '/100';
+    document.getElementById('weak-area-name').textContent = weak.name.charAt(0).toUpperCase() + weak.name.slice(1);
 
     document.getElementById('row-rate-value').textContent = scores.rate;
-    document.getElementById('row-rate-label').textContent = rateLabel(scores.rate);
+    document.getElementById('row-rate-label').textContent = rateContext(scores.rate);
 
     if (scores.holdSkipped) {
-      document.getElementById('row-control-value').textContent = 'Skipped';
-      document.getElementById('row-control-sub').textContent = '';
-      document.getElementById('row-control-label').textContent = 'Skipped for safety';
+      document.getElementById('row-control-value').textContent = '—';
+      document.getElementById('row-control-label').textContent = 'Skipped';
     } else {
-      document.getElementById('row-control-value').textContent = scores.holdScore + '/100';
-      document.getElementById('row-control-sub').textContent = scores.hold + 's hold';
+      document.getElementById('row-control-value').textContent = scores.holdScore;
       document.getElementById('row-control-label').textContent = scoreLabel(scores.holdScore);
     }
+
+    document.getElementById('row-hold-value').textContent = scores.holdSkipped ? '—' : scores.hold + 's';
+    document.getElementById('row-hold-label').textContent = scores.holdSkipped ? 'Skipped for safety' : 'Gentle control check';
 
     document.getElementById('row-paced-value').textContent = scores.pacedScore + '/100';
     document.getElementById('row-paced-label').textContent = scoreLabel(scores.pacedScore);
@@ -382,9 +425,14 @@
     }
 
     const nextStep = nextStepFor(scores);
+    document.getElementById('next-step-eyebrow').textContent = nextStep.eyebrow;
     document.getElementById('next-step-text').textContent = nextStep.text;
+    document.getElementById('next-step-sub').textContent = nextStep.sub;
     const nextStepBtn = document.getElementById('next-step-btn');
-    nextStepBtn.onclick = () => openExercisePlayer(nextStep.exercise);
+    nextStepBtn.onclick = () => {
+      logEvent('recommended_exercise_started', { exercise: nextStep.exercise });
+      openExercisePlayer(nextStep.exercise);
+    };
 
     const history = loadHistory();
     const today = todayKey();
@@ -494,6 +542,7 @@
   document.getElementById('retake-btn').addEventListener('click', () => {
     heroSection.style.display = '';
     whyMattersSection.style.display = '';
+    workdaySection.style.display = '';
     introSection.style.display = '';
     exercisesSection.style.display = '';
     showOnly(null);
@@ -506,17 +555,24 @@
     window.scrollTo({ top: 0, behavior: 'smooth' });
   });
 
-  navProgressLink.addEventListener('click', (e) => {
-    e.preventDefault();
+  function revealProgress() {
     progressSection.hidden = false;
     progressSection.scrollIntoView({ behavior: 'smooth' });
+  }
+
+  navProgressLink.addEventListener('click', (e) => {
+    e.preventDefault();
+    revealProgress();
   });
+
+  document.getElementById('progress-cta-link').addEventListener('click', revealProgress);
 
   /* init: if returning user has history, reveal progress nav */
   if (loadHistory().length) {
     navProgressLink.hidden = false;
     progressSection.hidden = false;
     renderProgress();
+    logEvent('return_visit');
   }
 
   /* ================= GUIDED EXERCISES (Box / 4-7-8 / Bedtime) ================= */
@@ -560,6 +616,28 @@
       music: false,
       durationPicker: false
     },
+    coherent: {
+      title: 'Slow, steady breathing',
+      phases: [
+        { label: 'Inhale', seconds: 5, action: 'inhale' },
+        { label: 'Exhale', seconds: 6, action: 'exhale' }
+      ],
+      rounds: 27, /* ~5 minutes at roughly 5.5 breaths/min, no holds */
+      theme: 'light',
+      music: false,
+      durationPicker: false
+    },
+    diaphragmatic: {
+      title: 'Diaphragmatic breathing',
+      phases: [
+        { label: 'Breathe in', seconds: 4, action: 'inhale' },
+        { label: 'Breathe out', seconds: 5, action: 'exhale' }
+      ],
+      rounds: 20, /* ~3 minutes, natural comfortable pace, no holds */
+      theme: 'light',
+      music: false,
+      durationPicker: false
+    },
     bedtime: {
       title: 'Bedtime wind down',
       phases: [
@@ -584,6 +662,7 @@
 
   function openExercisePlayer(key) {
     const def = EXERCISE_DEFS[key];
+    logEvent('exercise_selected', { exercise: key });
     activeExercise = key;
     exPhaseIndex = 0;
     exRound = 1;
@@ -689,6 +768,7 @@
       if (exRound > totalRounds) {
         exercisePhaseLabel.textContent = 'well done';
         exerciseRoundLabel.textContent = '';
+        logEvent('exercise_completed', { exercise: activeExercise });
         clearInterval(sessionTimerInterval);
         stopAmbientTone();
         setTimeout(closeExercisePlayer, 1600);
