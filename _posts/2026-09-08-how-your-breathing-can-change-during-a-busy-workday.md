@@ -1,5 +1,6 @@
 ---
 title: "How your breathing can change during a busy workday"
+image: /assets/images/blog/breathing-workday-header.png
 ---
 
 Breathing is unusual among bodily functions: it runs on autopilot most of the time, but you can take conscious control of it whenever you want. During a long, focused, screen-heavy workday, that autopilot can drift in small ways without you ever noticing.

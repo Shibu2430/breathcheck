@@ -2,6 +2,11 @@
 layout: default
 ---
 <article>
+  {% if page.image %}
+  <div class="post-banner">
+    <img src="{{ page.image | relative_url }}" alt="" class="post-banner-img">
+  </div>
+  {% endif %}
   <div class="post-header">
     <div class="wrap-narrow">
       <div class="post-meta-row">
