@@ -5,17 +5,38 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BreathCheck — A breathing companion for your workday</title>
 <meta name="description" content="Short, approachable breathing check-ins and exercises built around a busy workday — for developers, IT professionals, and anyone who spends the day at a screen.">
+<link rel="canonical" href="https://shibu2430.github.io/breathcheck/">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="BreathCheck — A breathing companion for your workday">
+<meta property="og:description" content="Short, approachable breathing check-ins and exercises built around a busy workday — for developers, IT professionals, and anyone who spends the day at a screen.">
+<meta property="og:url" content="https://shibu2430.github.io/breathcheck/">
+<meta property="og:image" content="https://shibu2430.github.io/breathcheck/assets/images/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="BreathCheck — A breathing companion for your workday">
+<meta name="twitter:description" content="Short, approachable breathing check-ins and exercises built around a busy workday.">
+<meta name="twitter:image" content="https://shibu2430.github.io/breathcheck/assets/images/og-image.png">
+
+<link rel="icon" type="image/png" sizes="32x32" href="assets/images/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="assets/images/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="512x512" href="assets/images/favicon-512.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=8">
+<link rel="stylesheet" href="styles.css?v=9">
 </head>
 <body>
 
 <header class="topbar">
   <div class="wrap topbar-inner">
     <a class="brand" href="./" aria-label="BreathCheck home">BreathCheck</a>
-    <nav class="topnav">
+    <button class="nav-toggle" id="nav-toggle-btn" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="topnav">
+      <span></span><span></span><span></span>
+    </button>
+    <nav class="topnav" id="topnav">
       <a href="#why-matters">Why it matters</a>
       <a href="#how-it-works">How it works</a>
       <a href="#exercises">Exercises</a>
@@ -66,7 +87,7 @@
       <div class="why-grid">
         <div class="why-item">
           <h3>Gets you through stressful moments</h3>
-          <p>A rough meeting, a tight deadline, an urgent issue — slow breathing is one of the fastest ways to steady yourself, right at your desk.</p>
+          <p>A short breathing pause can help you slow down and reset during a demanding workday — a rough meeting, a tight deadline, an urgent issue.</p>
         </div>
         <div class="why-item">
           <h3>Helps you switch off after work</h3>
@@ -74,7 +95,7 @@
         </div>
         <div class="why-item">
           <h3>Keeps you steadier all day</h3>
-          <p>Fast, shallow breathing creeps in during focused work without you noticing. Fixing it is one of the simplest levers for steadier energy through a long day.</p>
+          <p>Long periods of focused work can make you less aware of how you're breathing. BreathCheck gives you a simple way to pause and check in.</p>
         </div>
       </div>
     </div>
@@ -98,10 +119,10 @@
           <span class="workday-need">Reset</span>
           <span class="workday-response">Slow, steady breathing →</span>
         </button>
-        <button class="workday-card" type="button" data-exercise="coherent">
+        <button class="workday-card" type="button" data-exercise="extended">
           <span class="workday-situation">Deadline or stressful moment</span>
-          <span class="workday-need">Calm</span>
-          <span class="workday-response">Slow, steady breathing →</span>
+          <span class="workday-need">Reset</span>
+          <span class="workday-response">Extended exhale →</span>
         </button>
         <button class="workday-card" type="button" data-exercise="diaphragmatic">
           <span class="workday-situation">Long stretch at your desk</span>
@@ -171,6 +192,12 @@
           <p>Breathe naturally at your own pace — notice your belly rise and fall. No need to force it or breathe deeply.</p>
           <button class="btn btn-ghost" data-exercise="diaphragmatic">Start · 3 min</button>
         </div>
+        <div class="exercise-card">
+          <span class="exercise-tag">Best for: stress / reset</span>
+          <h3>Extended exhale</h3>
+          <p>A comfortable inhale followed by a slightly longer, relaxed exhale. A simple option for tense moments or after a difficult meeting.</p>
+          <button class="btn btn-ghost" data-exercise="extended">Start · 3 min</button>
+        </div>
         <div class="exercise-card exercise-card-featured">
           <span class="exercise-tag exercise-tag-dark">Best for: falling asleep</span>
           <h3>Bedtime wind down</h3>
@@ -182,7 +209,7 @@
   </section>
 
   <!-- EXERCISE PLAYER (shared overlay) -->
-  <div class="exercise-player theme-light" id="exercise-player" hidden>
+  <div class="exercise-player theme-light" id="exercise-player" role="dialog" aria-modal="true" aria-label="Guided breathing exercise" hidden>
     <button class="exit-btn exit-btn-player" id="exercise-exit-btn" type="button">Exit</button>
 
     <div class="exercise-player-inner">
@@ -199,7 +226,7 @@
           <div class="lung-glow"></div>
           <img src="assets/images/lungs.png" alt="" class="lung-img">
         </div>
-        <p class="lung-phase-label" id="exercise-phase-label">get ready</p>
+        <p class="lung-phase-label" id="exercise-phase-label" aria-live="polite">get ready</p>
         <p class="lung-round-label" id="exercise-round-label"></p>
         <p class="session-timer" id="exercise-session-timer" hidden>5:00</p>
       </div>
@@ -215,9 +242,9 @@
   </div>
 
   <!-- CALCULATION INFO MODAL -->
-  <div class="confirm-modal" id="calc-modal" hidden>
+  <div class="confirm-modal" id="calc-modal" role="dialog" aria-modal="true" aria-label="How your score is calculated" hidden>
     <div class="confirm-modal-box">
-      <p class="confirm-modal-text">Your overall score blends three simple checks: your resting breathing rate, a gentle breath-hold control check, and how steadily you followed a paced breathing rhythm.</p>
+      <p class="confirm-modal-text">Your breathing snapshot blends two things we actually measure: your resting breathing rate and a gentle breath-hold control check. The guided breathing round at the end is practice — it isn't scored.</p>
       <p class="confirm-modal-text confirm-modal-text-muted">It's a self-guided trend indicator to help you notice patterns over time — not a medical or diagnostic measurement.</p>
       <div class="confirm-modal-actions">
         <button class="btn btn-primary" id="calc-modal-close-btn">Got it</button>
@@ -226,7 +253,7 @@
   </div>
 
   <!-- MEDICAL BOUNDARY INFO MODAL -->
-  <div class="confirm-modal" id="medical-modal" hidden>
+  <div class="confirm-modal" id="medical-modal" role="dialog" aria-modal="true" aria-label="Medical disclaimer" hidden>
     <div class="confirm-modal-box">
       <p class="confirm-modal-text">BreathCheck is not designed to assess sudden or severe breathing problems. If you're having severe difficulty breathing, chest pain, fainting, or blue or grey lips, seek urgent medical care now.</p>
       <p class="confirm-modal-text confirm-modal-text-muted">This tool offers general wellness information and self-guided practice, not a diagnosis or medical advice.</p>
@@ -237,7 +264,7 @@
   </div>
 
   <!-- CONFIRM MODAL (shared) -->
-  <div class="confirm-modal" id="confirm-modal" hidden>
+  <div class="confirm-modal" id="confirm-modal" role="dialog" aria-modal="true" aria-label="Confirm" hidden>
     <div class="confirm-modal-box">
       <p class="confirm-modal-text" id="confirm-modal-text">Exit now? Your progress on this session won't be saved.</p>
       <div class="confirm-modal-actions">
@@ -304,14 +331,14 @@
         <p class="stage-eyebrow">Stage 3 of 3</p>
         <h2>Box breathing</h2>
         <p class="stage-instructions">Follow the lungs. Four seconds in, four second hold, four seconds out, four second hold. Four rounds.</p>
-        <p class="stage-why">Why: this checks how easily you can follow a controlled rhythm — not how deeply you can breathe.</p>
+        <p class="stage-why">This is a short guided practice round — it isn't scored, it's just practice following a rhythm.</p>
         <div class="stage-panel">
           <div class="lung-stage lung-stage-lg">
             <div class="lung-visual" id="box-lung-visual">
               <div class="lung-glow"></div>
               <img src="assets/images/lungs.png" alt="" class="lung-img">
             </div>
-            <p class="lung-phase-label" id="box-phase-label">get ready</p>
+            <p class="lung-phase-label" id="box-phase-label" aria-live="polite">get ready</p>
             <p class="lung-round-label" id="box-round-label">round 1 of 4</p>
           </div>
           <button class="btn btn-primary btn-lg" id="box-start-btn">Begin box breathing</button>
@@ -349,27 +376,23 @@
         </div>
       </div>
 
-      <div class="metric-row">
-        <div class="metric-card">
-          <span class="metric-label">Control</span>
-          <span class="metric-value" id="row-control-value">—</span>
-          <span class="metric-context" id="row-control-label">—</span>
-        </div>
+      <div class="metric-row metric-row-2">
         <div class="metric-card">
           <span class="metric-label">Resting rate</span>
           <span class="metric-value" id="row-rate-value">—</span>
           <span class="metric-context" id="row-rate-label">—</span>
         </div>
         <div class="metric-card">
-          <span class="metric-label">Breath hold</span>
-          <span class="metric-value" id="row-hold-value">—</span>
-          <span class="metric-context" id="row-hold-label">Gentle control check</span>
+          <span class="metric-label">Breath control</span>
+          <span class="metric-value" id="row-control-value">—</span>
+          <span class="metric-context" id="row-control-label">—</span>
         </div>
       </div>
+      <p class="metric-disclaimer">What matters most is your pattern over time and how you feel — not any single reading.</p>
 
       <div class="secondary-metrics">
         <div class="secondary-metric-row">
-          <span>Paced breathing</span>
+          <span>Guided practice</span>
           <span class="secondary-metric-value" id="row-paced-value">—</span>
           <span class="secondary-metric-context" id="row-paced-label">—</span>
         </div>
@@ -424,6 +447,6 @@
   </div>
 </footer>
 
-<script src="script.js?v=8"></script>
+<script src="script.js?v=9"></script>
 </body>
 </html>

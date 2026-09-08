@@ -79,6 +79,33 @@
     else window.scrollTo({ top: 0, behavior: 'smooth' });
   });
 
+  /* ================= MODAL ACCESSIBILITY (shared) =================
+     Handles focus trapping, Escape-to-close, and returning focus to the
+     element that opened the dialog — used by every modal/overlay below. */
+  let modalReturnFocus = null;
+  let modalKeydownHandler = null;
+
+  function activateModalA11y(modalEl, onEscape) {
+    modalReturnFocus = document.activeElement;
+    const focusables = modalEl.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    if (focusables.length) focusables[0].focus();
+    modalKeydownHandler = function (e) {
+      if (e.key === 'Escape') {
+        onEscape();
+      } else if (e.key === 'Tab' && focusables.length) {
+        const first = focusables[0], last = focusables[focusables.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+      }
+    };
+    document.addEventListener('keydown', modalKeydownHandler);
+  }
+
+  function deactivateModalA11y() {
+    if (modalKeydownHandler) { document.removeEventListener('keydown', modalKeydownHandler); modalKeydownHandler = null; }
+    if (modalReturnFocus) { modalReturnFocus.focus(); modalReturnFocus = null; }
+  }
+
   /* ================= CONFIRM MODAL (shared) ================= */
   const confirmModal = document.getElementById('confirm-modal');
   const confirmModalText = document.getElementById('confirm-modal-text');
@@ -90,11 +117,13 @@
     confirmModalText.textContent = message;
     pendingConfirmAction = onConfirm;
     confirmModal.hidden = false;
+    activateModalA11y(confirmModal, hideConfirm);
   }
 
   function hideConfirm() {
     confirmModal.hidden = true;
     pendingConfirmAction = null;
+    deactivateModalA11y();
   }
 
   confirmCancelBtn.addEventListener('click', hideConfirm);
@@ -106,13 +135,22 @@
 
   /* ---- medical boundary info modal (simple info panel, no confirm/cancel choice) ---- */
   const medicalModal = document.getElementById('medical-modal');
-  document.getElementById('medical-note-link').addEventListener('click', () => { medicalModal.hidden = false; });
-  document.getElementById('medical-modal-close-btn').addEventListener('click', () => { medicalModal.hidden = true; });
+  function closeMedicalModal() { medicalModal.hidden = true; deactivateModalA11y(); }
+  document.getElementById('medical-note-link').addEventListener('click', () => {
+    medicalModal.hidden = false;
+    activateModalA11y(medicalModal, closeMedicalModal);
+  });
+  document.getElementById('medical-modal-close-btn').addEventListener('click', closeMedicalModal);
 
   /* ---- "how is this calculated" info modal ---- */
   const calcModal = document.getElementById('calc-modal');
-  document.getElementById('calc-link').addEventListener('click', () => { calcModal.hidden = false; });
-  document.getElementById('calc-modal-close-btn').addEventListener('click', () => { calcModal.hidden = true; });
+  function closeCalcModal() { calcModal.hidden = true; deactivateModalA11y(); }
+  document.getElementById('calc-link').addEventListener('click', () => {
+    calcModal.hidden = false;
+    activateModalA11y(calcModal, closeCalcModal);
+  });
+  document.getElementById('calc-modal-close-btn').addEventListener('click', closeCalcModal);
+
 
   /* Exit the scored assessment at any point — no result is saved */
   document.getElementById('exit-assessment-btn').addEventListener('click', () => {
@@ -303,10 +341,13 @@
 
   function computeScores() {
     const rateScore = scoreFromRate(session.rate ?? 16);
-    /* if the hold was skipped, use a neutral mid-value so it doesn't unfairly tank the score */
     const holdScore = scoreFromHold(session.hold ?? 20);
-    const pacedScore = Math.round((rateScore * 0.5) + (holdScore * 0.5));
-    const overall = Math.max(30, Math.min(98, Math.round((rateScore + holdScore + 80) / 3)));
+    /* Overall only ever blends what was actually measured. If the hold was
+       skipped, the score is based on resting rate alone — never a fixed
+       stand-in value for the unmeasured guided-practice round. */
+    const overall = session.holdSkipped
+      ? Math.max(30, Math.min(98, rateScore))
+      : Math.max(30, Math.min(98, Math.round((rateScore + holdScore) / 2)));
 
     const history = loadHistory();
     const consistency = computeConsistency(history, overall);
@@ -317,7 +358,6 @@
       holdSkipped: !!session.holdSkipped,
       rateScore,
       holdScore,
-      pacedScore,
       consistency,
       overall
     };
@@ -347,41 +387,40 @@
 
   function rateContext(breaths) {
     if (breaths >= 12 && breaths <= 18) return 'Steady';
-    if (breaths > 18) return 'A bit fast today';
-    return 'Slower than typical';
+    if (breaths > 18) return 'Above the typical adult resting range';
+    return 'Below the typical adult resting range';
   }
 
   function weakestArea(scores) {
     const areas = [
-      { key: 'rate', name: 'resting rate', score: scores.rateScore, exercise: '478' },
-      { key: 'control', name: 'breath control', score: scores.holdScore, exercise: '478' },
-      { key: 'paced', name: 'paced breathing', score: scores.pacedScore, exercise: 'box' }
+      { key: 'rate', name: 'resting rate', score: scores.rateScore, exercise: 'coherent' },
+      { key: 'control', name: 'breath control', score: scores.holdScore, exercise: '478' }
     ];
-    /* exclude the hold-derived areas from being singled out if the test was skipped —
+    /* exclude breath control from being singled out if the test was skipped —
        we don't have a real reading to base a recommendation on */
     const usable = scores.holdSkipped ? areas.filter(a => a.key !== 'control') : areas;
+    if (usable.length === 1) return { weak: usable[0], strong: usable[0] };
     usable.sort((a, b) => a.score - b.score);
     return { weak: usable[0], strong: usable[usable.length - 1] };
   }
 
   function nextStepFor(scores) {
-    const { weak, strong } = weakestArea(scores);
+    const { weak } = weakestArea(scores);
     /* when the overall session was strong, recommend maintaining it rather than
-       chasing whichever of three close scores happened to be mathematically lowest */
+       chasing whichever of two close scores happened to be mathematically lowest */
     if (scores.overall >= 75) {
       return {
         eyebrow: 'Build on your strong breathing today',
         text: 'Try slow, steady breathing.',
-        sub: '5 minutes · about 5.5 breaths a minute',
+        sub: '5 minutes · a slow, comfortable rhythm',
         exercise: 'coherent'
       };
     }
     const map = {
-      'resting rate': { eyebrow: 'Focus on your resting rate', text: 'Try slow, steady breathing to help bring your resting rate down.', sub: '5 minutes · about 5.5 breaths a minute', exercise: 'coherent' },
-      'breath control': { eyebrow: 'Focus on your breath control', text: 'Practice 4-7-8 breathing to build a bit more control.', sub: '4 rounds · about 2 minutes', exercise: '478' },
-      'paced breathing': { eyebrow: 'Focus on your paced breathing', text: 'Try box breathing to sharpen your paced rhythm.', sub: '4 rounds · about 1 minute', exercise: 'box' }
+      'resting rate': { eyebrow: 'Focus on your resting rate', text: 'Try slow, steady breathing to help bring your resting rate down.', sub: '5 minutes · a slow, comfortable rhythm', exercise: 'coherent' },
+      'breath control': { eyebrow: 'Focus on your breath control', text: 'Practice 4-7-8 breathing to build a bit more control.', sub: '4 rounds · about 2 minutes', exercise: '478' }
     };
-    return map[weak.name] || map['paced breathing'];
+    return map[weak.name] || map['resting rate'];
   }
 
   /* ================= RESULTS + STORAGE ================= */
@@ -396,7 +435,7 @@
     document.getElementById('result-verdict').textContent = verdictText(scores.overall, weak.name, strong.name);
 
     document.getElementById('strong-area-name').textContent = strong.name.charAt(0).toUpperCase() + strong.name.slice(1);
-    document.getElementById('strong-area-score').textContent = strong.score + '/100';
+    document.getElementById('strong-area-score').textContent = scoreLabel(strong.score);
     document.getElementById('weak-area-name').textContent = weak.name.charAt(0).toUpperCase() + weak.name.slice(1);
 
     document.getElementById('row-rate-value').textContent = scores.rate;
@@ -404,17 +443,14 @@
 
     if (scores.holdSkipped) {
       document.getElementById('row-control-value').textContent = '—';
-      document.getElementById('row-control-label').textContent = 'Skipped';
+      document.getElementById('row-control-label').textContent = 'Skipped for safety';
     } else {
-      document.getElementById('row-control-value').textContent = scores.holdScore;
-      document.getElementById('row-control-label').textContent = scoreLabel(scores.holdScore);
+      document.getElementById('row-control-value').textContent = scores.hold + 's';
+      document.getElementById('row-control-label').textContent = 'Gentle self-check · not a fitness measurement';
     }
 
-    document.getElementById('row-hold-value').textContent = scores.holdSkipped ? '—' : scores.hold + 's';
-    document.getElementById('row-hold-label').textContent = scores.holdSkipped ? 'Skipped for safety' : 'Gentle control check';
-
-    document.getElementById('row-paced-value').textContent = scores.pacedScore + '/100';
-    document.getElementById('row-paced-label').textContent = scoreLabel(scores.pacedScore);
+    document.getElementById('row-paced-value').textContent = 'Completed';
+    document.getElementById('row-paced-label').textContent = 'Guided practice, not scored';
 
     if (scores.consistency === null) {
       document.getElementById('row-consistency-value').textContent = '—';
@@ -443,7 +479,7 @@
     if (recentAvg) {
       comparePanel.hidden = false;
       compareRows.innerHTML = '';
-      addCompareRow(compareRows, 'Overall wellness', recentAvg.overall, scores.overall);
+      addCompareRow(compareRows, 'Breathing snapshot', recentAvg.overall, scores.overall);
       if (!scores.holdSkipped) addCompareRow(compareRows, 'Breath hold', recentAvg.hold, scores.hold, 's');
     } else {
       comparePanel.hidden = true;
@@ -474,13 +510,25 @@
     container.appendChild(row);
   }
 
-  function todayKey() {
-    return new Date().toISOString().slice(0, 10);
+  /* Local-date helpers. toISOString() is UTC-based, which can put a session
+     on the wrong calendar day for anyone not near UTC+0 (e.g. late-evening
+     sessions in India could land on the previous or next day). These use
+     the browser's local calendar consistently for both formatting and
+     re-parsing stored date keys. */
+  function localDateKey(date) {
+    date = date || new Date();
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
   }
-  function yesterdayKey() {
-    const d = new Date();
-    d.setDate(d.getDate() - 1);
-    return d.toISOString().slice(0, 10);
+  function parseLocalDateKey(key) {
+    const [y, m, d] = key.split('-').map(Number);
+    return new Date(y, m - 1, d);
+  }
+
+  function todayKey() {
+    return localDateKey();
   }
 
   function loadHistory() {
@@ -505,10 +553,10 @@
     if (!history.length) return { current: 0, best: 0 };
     const dates = new Set(history.map(h => h.date));
     let best = 0, run = 0;
-    let cursor = new Date(history[0].date);
-    const last = new Date(history[history.length - 1].date);
+    let cursor = parseLocalDateKey(history[0].date);
+    const last = parseLocalDateKey(history[history.length - 1].date);
     while (cursor <= last) {
-      const key = cursor.toISOString().slice(0, 10);
+      const key = localDateKey(cursor);
       if (dates.has(key)) { run += 1; best = Math.max(best, run); }
       else { run = 0; }
       cursor.setDate(cursor.getDate() + 1);
@@ -516,7 +564,7 @@
     // current streak: count back from today
     let current = 0;
     let d = new Date();
-    while (dates.has(d.toISOString().slice(0, 10))) {
+    while (dates.has(localDateKey(d))) {
       current += 1;
       d.setDate(d.getDate() - 1);
     }
@@ -553,6 +601,28 @@
     goToStage(1);
     showOnly(assessmentSection);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  /* ---- mobile hamburger menu ---- */
+  const navToggleBtn = document.getElementById('nav-toggle-btn');
+  const topnav = document.getElementById('topnav');
+
+  function closeMobileNav() {
+    topnav.classList.remove('open');
+    navToggleBtn.setAttribute('aria-expanded', 'false');
+  }
+
+  navToggleBtn.addEventListener('click', () => {
+    const isOpen = topnav.classList.toggle('open');
+    navToggleBtn.setAttribute('aria-expanded', String(isOpen));
+  });
+
+  topnav.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', closeMobileNav);
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && topnav.classList.contains('open')) closeMobileNav();
   });
 
   function revealProgress() {
@@ -638,6 +708,17 @@
       music: false,
       durationPicker: false
     },
+    extended: {
+      title: 'Extended exhale',
+      phases: [
+        { label: 'Inhale', seconds: 4, action: 'inhale' },
+        { label: 'Exhale', seconds: 6, action: 'exhale' }
+      ],
+      rounds: 15, /* ~3 minutes, no holds */
+      theme: 'light',
+      music: false,
+      durationPicker: false
+    },
     bedtime: {
       title: 'Bedtime wind down',
       phases: [
@@ -694,6 +775,7 @@
     exerciseBeginBtn.textContent = 'Begin';
 
     exercisePlayer.hidden = false;
+    activateModalA11y(exercisePlayer, () => exerciseExitBtn.click());
   }
 
   function closeExercisePlayer() {
@@ -702,6 +784,7 @@
     stopAmbientTone();
     exercisePlayer.hidden = true;
     activeExercise = null;
+    deactivateModalA11y();
   }
 
   function formatTime(totalSeconds) {
@@ -725,6 +808,9 @@
   exerciseExitBtn.addEventListener('click', () => {
     /* only confirm if a session is actually in progress (Begin was already clicked) */
     if (exerciseBeginBtn.hidden) {
+      /* release the exercise player's own trap first so the confirm modal's
+         trap doesn't stack a second keydown listener on top of it */
+      deactivateModalA11y();
       showConfirm('End this session now?', closeExercisePlayer);
     } else {
       closeExercisePlayer();
