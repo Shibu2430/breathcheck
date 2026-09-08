@@ -4,7 +4,7 @@ layout: default
 <article>
   {% if page.image %}
   <div class="post-banner">
-    <img src="{{ page.image | relative_url }}" alt="" class="post-banner-img">
+    <img src="{{ page.image | relative_url }}" alt="{{ page.title }}" class="post-banner-img">
   </div>
   {% endif %}
   <div class="post-header">

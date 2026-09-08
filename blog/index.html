@@ -17,16 +17,18 @@ description: "Short, practical notes on breathing mechanics, stress, and what th
     <a class="post-card" href="{{ post.url | relative_url }}">
       {% if post.image %}
       <div class="post-card-thumb">
-        <img src="{{ post.image | relative_url }}" alt="" loading="lazy">
+        <img src="{{ post.image | relative_url }}" alt="{{ post.title }}" loading="lazy">
       </div>
       {% endif %}
-      <div class="post-meta-row">
-        <span class="post-card-date">{{ post.date | date: "%B %-d, %Y" }}</span>
-        <span class="post-meta-dot">·</span>
-        <span class="post-read-time">{{ post.content | strip_html | number_of_words | divided_by: 200 | at_least: 1 }} min read</span>
+      <div class="post-card-body">
+        <div class="post-meta-row">
+          <span class="post-card-date">{{ post.date | date: "%B %-d, %Y" }}</span>
+          <span class="post-meta-dot">·</span>
+          <span class="post-read-time">{{ post.content | strip_html | number_of_words | divided_by: 200 | at_least: 1 }} min read</span>
+        </div>
+        <h2>{{ post.title }}</h2>
+        <p>{{ post.excerpt | strip_html | truncate: 160 }}</p>
       </div>
-      <h2>{{ post.title }}</h2>
-      <p>{{ post.excerpt | strip_html | truncate: 160 }}</p>
     </a>
     {% endfor %}
   </div>

@@ -242,6 +242,21 @@ a { color: var(--moss-700); }
 .session-timer { font-family: var(--font-display); font-size: 20px; color: var(--moss-700); margin-top: 6px; font-variant-numeric: tabular-nums; }
 .theme-dark .session-timer { color: #C7D9B5; }
 
+.session-tip {
+  font-size: 13px;
+  color: var(--ink-muted);
+  margin-top: 16px;
+  max-width: 34ch;
+  text-align: center;
+  min-height: 1.5em;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+.session-tip.visible { opacity: 1; }
+.session-tip a { color: var(--moss-700); font-weight: 600; }
+.theme-dark .session-tip { color: #A9BE93; }
+.theme-dark .session-tip a { color: var(--moss-300); }
+
 /* ---------- breathing lung visual (image-based) ---------- */
 .lung-visual {
   position: relative;

@@ -59,24 +59,35 @@ a { color: var(--moss-700); }
 .blog-hero h1 { font-size: clamp(1.8rem, 4vw, 2.6rem); }
 .blog-hero p { font-size: 16px; max-width: 50ch; }
 
-.post-list { padding: 48px 0 80px; display: flex; flex-direction: column; gap: 4px; }
-.post-card {
-  display: block; text-decoration: none;
-  padding: 22px 20px; margin: 0 -20px;
-  border-radius: var(--radius-md);
-  border-bottom: 1px solid var(--line);
-  transition: background 0.15s ease;
+.post-list { padding: 48px 0 80px; }
+.post-list .wrap {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 28px;
 }
-.post-card:hover { background: var(--paper-tint); }
-.post-card:last-child { border-bottom: none; }
-.post-card-thumb { border-radius: 12px; overflow: hidden; margin-bottom: 14px; aspect-ratio: 1200/630; }
+.post-card {
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--line);
+  overflow: hidden;
+  transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+.post-card:hover {
+  border-color: var(--moss-300);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 24px rgba(22,36,10,0.08);
+}
+.post-card-thumb { border-radius: 0; overflow: hidden; margin-bottom: 0; aspect-ratio: 1200/630; }
 .post-card-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.post-card-body { padding: 18px 20px 22px; display: flex; flex-direction: column; flex: 1; }
 .post-card-date { font-size: 12px; color: var(--moss-700); font-weight: 600; letter-spacing: 0.02em; }
 .post-meta-row { display: flex; align-items: center; gap: 6px; }
 .post-meta-dot { color: var(--ink-muted); font-size: 12px; }
 .post-read-time { font-size: 12px; color: var(--ink-muted); }
-.post-card h2 { margin-top: 6px; margin-bottom: 0; font-size: 22px; color: var(--ink); }
-.post-card p { margin-top: 8px; margin-bottom: 0; font-size: 14px; color: var(--ink-soft); }
+.post-card h2 { margin-top: 8px; margin-bottom: 0; font-size: 19px; line-height: 1.3; color: var(--ink); }
+.post-card p { margin-top: 8px; margin-bottom: 0; font-size: 13px; color: var(--ink-soft); }
 
 /* single post */
 .post-banner { max-width: var(--max-width-narrow); margin: 24px auto 0; padding: 0 24px; }

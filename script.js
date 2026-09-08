@@ -162,19 +162,62 @@
     });
   });
 
+  /* ================= SESSION TIPS (shared rotation engine) =================
+     Used during genuinely idle waiting time — the 60s resting-rate count and
+     longer bedtime sessions — so that dead time carries something useful
+     instead of just watching a timer. Deliberately NOT shown during active
+     paced-breathing rounds (box/4-7-8/etc.), where the point is following
+     the rhythm, not reading. */
+  const GENERAL_TIPS = [
+    "Most people breathe 12–18 times a minute at rest. There's no need to force a number — just count what's natural.",
+    "Shallow, chest-led breathing is common at a desk. Notice whether your shoulders are doing most of the work right now.",
+    "One reading doesn't say much on its own — it's the pattern over days and weeks that actually tells you something.",
+    "This isn't a performance test. There's no score for holding still or counting perfectly.",
+    "Curious what a busy workday does to your breathing? <a href=\"blog/\" target=\"_blank\" rel=\"noopener\">Read more on the blog</a>."
+  ];
+  const BEDTIME_TIPS = [
+    "Slower breathing before bed is one of the simplest ways to cue your body that it's time to wind down.",
+    "There's no need to breathe deeply here — just let each exhale be a little longer and softer than the last.",
+    "If your mind wanders, that's normal. Just gently come back to the rhythm whenever you notice.",
+    "A dim screen and slow breathing work well together — if you can, lower your screen brightness too."
+  ];
+
+  function startTipRotation(el, tips, intervalMs) {
+    let i = 0;
+    function showNext() {
+      el.classList.remove('visible');
+      setTimeout(() => {
+        el.innerHTML = tips[i % tips.length];
+        el.hidden = false;
+        el.classList.add('visible');
+        i += 1;
+      }, 400);
+    }
+    showNext();
+    return setInterval(showNext, intervalMs);
+  }
+
+  function stopTipRotation(intervalId, el) {
+    clearInterval(intervalId);
+    if (el) { el.classList.remove('visible'); el.hidden = true; }
+  }
+
   /* ================= STAGE 1: resting rate ================= */
   const rateTimerEl = document.getElementById('rate-timer');
   const rateCountEl = document.getElementById('rate-count');
   const rateTapBtn = document.getElementById('rate-tap-btn');
   const rateStartBtn = document.getElementById('rate-start-btn');
+  const rateTipEl = document.getElementById('rate-tip');
 
   let rateInterval = null;
+  let rateTipInterval = null;
   let rateSecondsLeft = 60;
   let rateBreaths = 0;
   let rateRunning = false;
 
   function resetStage1() {
     clearInterval(rateInterval);
+    stopTipRotation(rateTipInterval, rateTipEl);
     rateSecondsLeft = 60;
     rateBreaths = 0;
     rateRunning = false;
@@ -190,11 +233,13 @@
     rateRunning = true;
     rateTapBtn.disabled = false;
     rateStartBtn.disabled = true;
+    rateTipInterval = startTipRotation(rateTipEl, GENERAL_TIPS, 15000);
     rateInterval = setInterval(() => {
       rateSecondsLeft -= 1;
       rateTimerEl.textContent = String(rateSecondsLeft);
       if (rateSecondsLeft <= 0) {
         clearInterval(rateInterval);
+        stopTipRotation(rateTipInterval, rateTipEl);
         rateTapBtn.disabled = true;
         finishStage1();
       }
@@ -659,6 +704,8 @@
   const musicToggleBtn = document.getElementById('music-toggle-btn');
   const iconSoundOn = document.getElementById('icon-sound-on');
   const iconSoundOff = document.getElementById('icon-sound-off');
+  const exerciseTipEl = document.getElementById('exercise-tip');
+  let exerciseTipInterval = null;
 
   const EXERCISE_DEFS = {
     box: {
@@ -729,7 +776,8 @@
       rounds: 16, /* default, recalculated from duration picker */
       theme: 'dark',
       music: true,
-      durationPicker: true
+      durationPicker: true,
+      tips: true
     }
   };
 
@@ -754,6 +802,7 @@
     exercisePhaseLabel.textContent = 'get ready';
     exerciseRoundLabel.textContent = '';
     setLungPhaseClass(exerciseLungVisual, null);
+    stopTipRotation(exerciseTipInterval, exerciseTipEl);
 
     durationPicker.hidden = !def.durationPicker;
     exerciseSessionTimer.hidden = !def.durationPicker;
@@ -781,6 +830,7 @@
   function closeExercisePlayer() {
     clearTimeout(exTimeout);
     clearInterval(sessionTimerInterval);
+    stopTipRotation(exerciseTipInterval, exerciseTipEl);
     stopAmbientTone();
     exercisePlayer.hidden = true;
     activeExercise = null;
@@ -834,6 +884,7 @@
     exerciseBeginBtn.hidden = true;
     durationPicker.hidden = true;
     if (def.music) startAmbientTone();
+    if (def.tips) exerciseTipInterval = startTipRotation(exerciseTipEl, BEDTIME_TIPS, 20000);
     runExercisePhase(def, rounds);
   });
 
