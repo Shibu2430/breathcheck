@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://shibu2430.github.io/breathcheck/sitemap.xml

@@ -2,6 +2,7 @@
 layout: default
 title: Blog
 permalink: /blog/
+description: "Short, practical notes on breathing mechanics, stress, and what the research actually says — for developers, IT professionals, and anyone who spends the day at a screen."
 ---
 <section class="blog-hero">
   <div class="wrap">
@@ -14,7 +15,11 @@ permalink: /blog/
   <div class="wrap">
     {% for post in site.posts %}
     <a class="post-card" href="{{ post.url | relative_url }}">
-      <span class="post-card-date">{{ post.date | date: "%B %-d, %Y" }}</span>
+      <div class="post-meta-row">
+        <span class="post-card-date">{{ post.date | date: "%B %-d, %Y" }}</span>
+        <span class="post-meta-dot">·</span>
+        <span class="post-read-time">{{ post.content | strip_html | number_of_words | divided_by: 200 | at_least: 1 }} min read</span>
+      </div>
       <h2>{{ post.title }}</h2>
       <p>{{ post.excerpt | strip_html | truncate: 160 }}</p>
     </a>
