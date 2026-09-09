@@ -1,7 +1,7 @@
 title: BreathCheck
 description: "A breathing companion for your workday. Short check-ins and guided exercises for developers, IT professionals, and anyone who spends the day at a screen."
-url: "https://shibu2430.github.io"
-baseurl: "/breathcheck"
+url: "https://breathcheck.site"
+baseurl: ""
 logo: /assets/images/og-image.png
 
 author:
