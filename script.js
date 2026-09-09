@@ -331,8 +331,22 @@
   }
 
   function setLungPhaseClass(visualEl, phaseAction) {
-    visualEl.classList.remove('phase-inhale', 'phase-exhale', 'phase-hold');
-    if (phaseAction) visualEl.classList.add('phase-' + phaseAction);
+    if (phaseAction === null) {
+      /* full reset, e.g. when opening a fresh session */
+      visualEl.classList.remove('phase-inhale', 'phase-exhale', 'phase-hold');
+      return;
+    }
+    if (phaseAction === 'hold') {
+      /* deliberately do nothing — holding means staying exactly where the
+         lungs already are (expanded after inhale, contracted after exhale).
+         There's no ".phase-hold" style on purpose: removing the previous
+         class here was the cause of the visible "snap" before/after every
+         hold, since the image would fall back to its default resting scale
+         for that one phase and then jump again on the next phase change. */
+      return;
+    }
+    visualEl.classList.remove('phase-inhale', 'phase-exhale');
+    visualEl.classList.add('phase-' + phaseAction);
   }
 
   function runBoxPhase() {
@@ -1123,13 +1137,25 @@
     }
   });
 
+  let cachedVoice = null;
+  function pickCalmVoice() {
+    if (cachedVoice || !window.speechSynthesis) return cachedVoice;
+    const voices = window.speechSynthesis.getVoices();
+    cachedVoice = voices.find(v => /en/i.test(v.lang)) || voices[0] || null;
+    return cachedVoice;
+  }
+
   function speakPhase(label) {
     if (!window.speechSynthesis) return;
     window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(label);
-    utterance.rate = 0.85;
-    utterance.pitch = 1;
-    utterance.volume = 0.8;
+    /* the trailing ellipsis gives most engines a small natural pause,
+       which reads as calmer than the bare word spoken abruptly */
+    const utterance = new SpeechSynthesisUtterance(label + '…');
+    utterance.rate = 0.68;   /* noticeably slow, unhurried pace */
+    utterance.pitch = 0.85;  /* slightly lower, softer tone rather than chirpy */
+    utterance.volume = 0.6;  /* soft, not attention-grabbing */
+    const voice = pickCalmVoice();
+    if (voice) utterance.voice = voice;
     window.speechSynthesis.speak(utterance);
   }
 
