@@ -59,7 +59,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=11">
+<link rel="stylesheet" href="styles.css?v=12">
 </head>
 <body>
 
@@ -246,32 +246,76 @@
     <button class="exit-btn exit-btn-player" id="exercise-exit-btn" type="button">Exit</button>
 
     <div class="exercise-player-inner">
-      <h3 class="exercise-player-title" id="exercise-player-title">Box breathing</h3>
 
-      <div class="duration-picker" id="duration-picker" hidden>
-        <button class="duration-opt" data-minutes="3" type="button">3 min</button>
-        <button class="duration-opt" data-minutes="5" type="button">5 min</button>
-        <button class="duration-opt" data-minutes="10" type="button">10 min</button>
-      </div>
+      <!-- INTRO VIEW -->
+      <div class="player-view player-view-intro" id="player-view-intro">
+        <h3 class="exercise-player-title" id="exercise-player-title">Box breathing</h3>
+        <p class="exercise-player-purpose" id="exercise-player-purpose">A steady, even rhythm.</p>
 
-      <div class="lung-stage lung-stage-lg">
-        <div class="lung-visual" id="exercise-lung-visual">
-          <div class="lung-glow"></div>
-          <img src="assets/images/lungs.png" alt="" class="lung-img" width="700" height="660">
+        <div class="duration-picker" id="duration-picker" hidden>
+          <button class="duration-opt" data-minutes="3" type="button">3 min</button>
+          <button class="duration-opt" data-minutes="5" type="button">5 min</button>
+          <button class="duration-opt" data-minutes="10" type="button">10 min</button>
         </div>
-        <p class="lung-phase-label" id="exercise-phase-label" aria-live="polite">get ready</p>
-        <p class="lung-round-label" id="exercise-round-label"></p>
-        <p class="session-timer" id="exercise-session-timer" hidden>5:00</p>
-        <p class="session-tip" id="exercise-tip" hidden></p>
+
+        <button class="btn btn-primary btn-lg" id="exercise-begin-btn">Begin</button>
+        <p class="exercise-player-estimate" id="exercise-player-estimate"></p>
+
+        <div class="player-toggles">
+          <button class="music-toggle" id="music-toggle-btn" type="button" hidden aria-pressed="true" aria-label="Toggle ambient sound">
+            <svg id="icon-sound-on" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.5 8.5a5 5 0 0 1 0 7"></path><path d="M19 5a10 10 0 0 1 0 14"></path></svg>
+            <svg id="icon-sound-off" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" hidden><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="21" y1="9" x2="15" y2="15"></line><line x1="15" y1="9" x2="21" y2="15"></line></svg>
+          </button>
+          <button class="music-toggle" id="voice-toggle-btn" type="button" aria-pressed="false" aria-label="Toggle spoken voice cues">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line></svg>
+          </button>
+        </div>
       </div>
 
-      <div class="exercise-player-controls">
-        <button class="btn btn-primary btn-lg" id="exercise-begin-btn">Begin</button>
-        <button class="music-toggle" id="music-toggle-btn" type="button" hidden aria-pressed="true" aria-label="Toggle ambient sound">
-          <svg id="icon-sound-on" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.5 8.5a5 5 0 0 1 0 7"></path><path d="M19 5a10 10 0 0 1 0 14"></path></svg>
-          <svg id="icon-sound-off" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" hidden><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="21" y1="9" x2="15" y2="15"></line><line x1="15" y1="9" x2="21" y2="15"></line></svg>
-        </button>
+      <!-- SESSION VIEW -->
+      <div class="player-view player-view-session" id="player-view-session" hidden>
+        <div class="lung-stage lung-stage-lg">
+          <div class="lung-visual" id="exercise-lung-visual">
+            <div class="lung-glow"></div>
+            <img src="assets/images/lungs.png" alt="" class="lung-img" width="700" height="660">
+          </div>
+          <p class="lung-phase-label" id="exercise-phase-label" aria-live="polite">get ready</p>
+          <p class="phase-cue" id="exercise-phase-cue"></p>
+          <p class="session-timer" id="exercise-session-timer" hidden>5:00</p>
+          <p class="session-tip" id="exercise-tip" hidden></p>
+        </div>
+
+        <div class="session-chrome" id="session-chrome">
+          <div class="progress-dots" id="progress-dots"></div>
+          <div class="progress-bar-track" id="progress-bar-track" hidden><div class="progress-bar-fill" id="progress-bar-fill"></div></div>
+          <p class="lung-round-label" id="exercise-round-label"></p>
+        </div>
       </div>
+
+      <!-- COMPLETE VIEW -->
+      <div class="player-view player-view-complete" id="player-view-complete" hidden>
+        <p class="complete-eyebrow">Nice work</p>
+        <h3 class="exercise-player-title" id="complete-title">Box breathing complete</h3>
+        <p class="complete-stats" id="complete-stats">4 rounds · 1:04</p>
+
+        <div class="mood-row">
+          <p class="mood-label">How do you feel now?</p>
+          <div class="mood-options" id="mood-options">
+            <button type="button" class="mood-btn" data-mood="calm" aria-label="Calm">😌</button>
+            <button type="button" class="mood-btn" data-mood="good" aria-label="Good">🙂</button>
+            <button type="button" class="mood-btn" data-mood="neutral" aria-label="Neutral">😐</button>
+            <button type="button" class="mood-btn" data-mood="tense" aria-label="Still tense">😣</button>
+          </div>
+        </div>
+
+        <div class="complete-next-step">
+          <p class="complete-next-eyebrow">Your next step</p>
+          <p id="complete-next-text">You just finished a short reset.</p>
+        </div>
+
+        <button class="btn btn-primary btn-lg" id="exercise-close-btn">Done</button>
+      </div>
+
     </div>
   </div>
 
@@ -482,6 +526,6 @@
   </div>
 </footer>
 
-<script src="script.js?v=10"></script>
+<script src="script.js?v=11"></script>
 </body>
 </html>

@@ -87,12 +87,16 @@
 
   function activateModalA11y(modalEl, onEscape) {
     modalReturnFocus = document.activeElement;
-    const focusables = modalEl.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
-    if (focusables.length) focusables[0].focus();
+    const getFocusables = () => Array.from(modalEl.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'))
+      .filter(el => el.offsetParent !== null); /* excludes anything currently hidden/display:none */
+    const initial = getFocusables();
+    if (initial.length) initial[0].focus();
     modalKeydownHandler = function (e) {
       if (e.key === 'Escape') {
         onEscape();
-      } else if (e.key === 'Tab' && focusables.length) {
+      } else if (e.key === 'Tab') {
+        const focusables = getFocusables();
+        if (!focusables.length) return;
         const first = focusables[0], last = focusables[focusables.length - 1];
         if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
         else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
@@ -690,32 +694,56 @@
     logEvent('return_visit');
   }
 
-  /* ================= GUIDED EXERCISES (Box / 4-7-8 / Bedtime) ================= */
+  /* ================= GUIDED EXERCISES (Box / 4-7-8 / Slow / Diaphragmatic / Extended / Bedtime) ================= */
 
   const exercisePlayer = document.getElementById('exercise-player');
   const exercisePlayerTitle = document.getElementById('exercise-player-title');
+  const exercisePlayerPurpose = document.getElementById('exercise-player-purpose');
+  const exercisePlayerEstimate = document.getElementById('exercise-player-estimate');
   const durationPicker = document.getElementById('duration-picker');
   const exerciseLungVisual = document.getElementById('exercise-lung-visual');
   const exercisePhaseLabel = document.getElementById('exercise-phase-label');
+  const exercisePhaseCue = document.getElementById('exercise-phase-cue');
   const exerciseRoundLabel = document.getElementById('exercise-round-label');
   const exerciseSessionTimer = document.getElementById('exercise-session-timer');
   const exerciseBeginBtn = document.getElementById('exercise-begin-btn');
   const exerciseExitBtn = document.getElementById('exercise-exit-btn');
+  const exerciseCloseBtn = document.getElementById('exercise-close-btn');
   const musicToggleBtn = document.getElementById('music-toggle-btn');
+  const voiceToggleBtn = document.getElementById('voice-toggle-btn');
   const iconSoundOn = document.getElementById('icon-sound-on');
   const iconSoundOff = document.getElementById('icon-sound-off');
   const exerciseTipEl = document.getElementById('exercise-tip');
+  const progressDotsEl = document.getElementById('progress-dots');
+  const progressBarTrack = document.getElementById('progress-bar-track');
+  const progressBarFill = document.getElementById('progress-bar-fill');
+  const sessionChrome = document.getElementById('session-chrome');
+  const playerViewIntro = document.getElementById('player-view-intro');
+  const playerViewSession = document.getElementById('player-view-session');
+  const playerViewComplete = document.getElementById('player-view-complete');
+  const completeTitle = document.getElementById('complete-title');
+  const completeStats = document.getElementById('complete-stats');
+  const completeNextText = document.getElementById('complete-next-text');
+  const moodOptions = document.getElementById('mood-options');
   let exerciseTipInterval = null;
 
   const EXERCISE_DEFS = {
     box: {
       title: 'Box breathing',
+      purpose: 'A steady, even rhythm — good before anything that needs focus.',
       phases: [
-        { label: 'Inhale', seconds: 4, action: 'inhale' },
-        { label: 'Hold', seconds: 4, action: 'hold' },
-        { label: 'Exhale', seconds: 4, action: 'exhale' },
-        { label: 'Hold', seconds: 4, action: 'hold' }
+        { label: 'Inhale', seconds: 4, action: 'inhale', cue: "Let your belly expand, not just your chest." },
+        { label: 'Hold', seconds: 4, action: 'hold', cue: "Stay relaxed here. No need to strain." },
+        { label: 'Exhale', seconds: 4, action: 'exhale', cue: "Let the breath go at the same steady pace." },
+        { label: 'Hold', seconds: 4, action: 'hold', cue: "Rest for a moment before the next round." }
       ],
+      roundAwareness: [
+        "Find your rhythm. Follow the pace, don't force it.",
+        "Relax your shoulders. Let them drop away from your ears.",
+        "Soften your jaw. You don't need to hold tension there.",
+        "Notice the difference. Has your breathing started to feel easier?"
+      ],
+      completionNote: "You're ready to get back to work.",
       rounds: 4,
       theme: 'light',
       music: false,
@@ -723,11 +751,19 @@
     },
     '478': {
       title: '4-7-8 breathing',
+      purpose: 'A longer exhale that helps settle the body before rest.',
       phases: [
-        { label: 'Inhale', seconds: 4, action: 'inhale' },
-        { label: 'Hold', seconds: 7, action: 'hold' },
-        { label: 'Exhale', seconds: 8, action: 'exhale' }
+        { label: 'Inhale', seconds: 4, action: 'inhale', cue: "Breathe in gently through your nose." },
+        { label: 'Hold', seconds: 7, action: 'hold', cue: "Stay comfortable here. Don't strain." },
+        { label: 'Exhale', seconds: 8, action: 'exhale', cue: "Let the air leave slowly, without forcing it." }
       ],
+      roundAwareness: [
+        "Find your rhythm. There's no need to rush the exhale.",
+        "Relax your shoulders and let your jaw soften.",
+        "Let each exhale get a little easier.",
+        "Notice how your body feels right now."
+      ],
+      completionNote: "A good moment to pause before your next task.",
       rounds: 4,
       theme: 'light',
       music: false,
@@ -735,10 +771,18 @@
     },
     coherent: {
       title: 'Slow, steady breathing',
+      purpose: 'An easy, even rhythm with no holds — good for a calm reset.',
       phases: [
-        { label: 'Inhale', seconds: 5, action: 'inhale' },
-        { label: 'Exhale', seconds: 6, action: 'exhale' }
+        { label: 'Inhale', seconds: 5, action: 'inhale', cue: "A smooth, easy breath in." },
+        { label: 'Exhale', seconds: 6, action: 'exhale', cue: "Let it fall away slowly." }
       ],
+      roundAwareness: [
+        "Settle into the rhythm.",
+        "Let your shoulders soften.",
+        "No need to control the breath — just follow it.",
+        "Notice how steady this feels."
+      ],
+      completionNote: "You're ready to get back to work.",
       rounds: 27, /* ~5 minutes at roughly 5.5 breaths/min, no holds */
       theme: 'light',
       music: false,
@@ -746,10 +790,18 @@
     },
     diaphragmatic: {
       title: 'Diaphragmatic breathing',
+      purpose: 'Breathe naturally at your own pace — just notice your belly rise and fall.',
       phases: [
-        { label: 'Breathe in', seconds: 4, action: 'inhale' },
-        { label: 'Breathe out', seconds: 5, action: 'exhale' }
+        { label: 'Breathe in', seconds: 4, action: 'inhale', cue: "Feel your belly rise, not your shoulders." },
+        { label: 'Breathe out', seconds: 5, action: 'exhale', cue: "Let your belly fall naturally." }
       ],
+      roundAwareness: [
+        "Rest one hand on your belly if that helps.",
+        "There's no need to breathe deeply — just naturally.",
+        "Notice the rise and fall, nothing more.",
+        "Let your breathing find its own pace."
+      ],
+      completionNote: "A small reset before you carry on with your day.",
       rounds: 20, /* ~3 minutes, natural comfortable pace, no holds */
       theme: 'light',
       music: false,
@@ -757,10 +809,18 @@
     },
     extended: {
       title: 'Extended exhale',
+      purpose: 'A comfortable inhale, a slightly longer exhale — good for tense moments.',
       phases: [
-        { label: 'Inhale', seconds: 4, action: 'inhale' },
-        { label: 'Exhale', seconds: 6, action: 'exhale' }
+        { label: 'Inhale', seconds: 4, action: 'inhale', cue: "A comfortable breath in, nothing forced." },
+        { label: 'Exhale', seconds: 6, action: 'exhale', cue: "Let this breath out a little longer than usual." }
       ],
+      roundAwareness: [
+        "Find your rhythm. Let the exhale lead.",
+        "Relax your shoulders as you breathe out.",
+        "Let your jaw soften with each exhale.",
+        "Notice if anything feels a little less tense."
+      ],
+      completionNote: "Take a moment before you go back to what you were doing.",
       rounds: 15, /* ~3 minutes, no holds */
       theme: 'light',
       music: false,
@@ -768,11 +828,19 @@
     },
     bedtime: {
       title: 'Bedtime wind down',
+      purpose: 'A longer, dimmed session to help you wind down before sleep.',
       phases: [
-        { label: 'Inhale', seconds: 4, action: 'inhale' },
-        { label: 'Hold', seconds: 7, action: 'hold' },
-        { label: 'Exhale', seconds: 8, action: 'exhale' }
+        { label: 'Inhale', seconds: 4, action: 'inhale', cue: "Breathe in slowly." },
+        { label: 'Hold', seconds: 7, action: 'hold', cue: "Just rest here a moment." },
+        { label: 'Exhale', seconds: 8, action: 'exhale', cue: "Let the day go with this breath." }
       ],
+      roundAwareness: [
+        "Let your shoulders sink.",
+        "Soften your face and jaw.",
+        "There's nowhere else to be right now.",
+        "Notice your body getting heavier."
+      ],
+      completionNote: "Your workday is done. Give yourself a few quiet minutes before reaching for another screen.",
       rounds: 16, /* default, recalculated from duration picker */
       theme: 'dark',
       music: true,
@@ -788,6 +856,57 @@
   let selectedMinutes = 5;
   let sessionSecondsRemaining = 0;
   let sessionTimerInterval = null;
+  let sessionElapsedSeconds = 0;
+  let sessionElapsedInterval = null;
+  let voiceEnabled = false;
+  let focusDimTimeout = null;
+
+  function showPlayerView(view) {
+    playerViewIntro.hidden = view !== 'intro';
+    playerViewSession.hidden = view !== 'session';
+    playerViewComplete.hidden = view !== 'complete';
+  }
+
+  function buildProgressIndicator(totalRounds) {
+    progressDotsEl.innerHTML = '';
+    if (totalRounds <= 8) {
+      progressDotsEl.hidden = false;
+      progressBarTrack.hidden = true;
+      for (let i = 0; i < totalRounds; i++) {
+        const dot = document.createElement('span');
+        dot.className = 'progress-dot';
+        progressDotsEl.appendChild(dot);
+      }
+    } else {
+      progressDotsEl.hidden = true;
+      progressBarTrack.hidden = false;
+      progressBarFill.style.width = '0%';
+    }
+  }
+
+  function updateProgressIndicator(round, totalRounds) {
+    if (totalRounds <= 8) {
+      const dots = progressDotsEl.querySelectorAll('.progress-dot');
+      dots.forEach((dot, i) => {
+        dot.classList.toggle('done', i < round - 1);
+        dot.classList.toggle('current', i === round - 1);
+      });
+    } else {
+      progressBarFill.style.width = Math.round(((round - 1) / totalRounds) * 100) + '%';
+    }
+  }
+
+  /* ---- focus/dim mode: fade non-essential chrome after a few idle seconds ---- */
+  function resetFocusDim() {
+    exercisePlayer.classList.remove('focus-dim');
+    clearTimeout(focusDimTimeout);
+    if (!playerViewSession.hidden) {
+      focusDimTimeout = setTimeout(() => { exercisePlayer.classList.add('focus-dim'); }, 8000);
+    }
+  }
+  ['mousemove', 'touchstart', 'keydown'].forEach(evt => {
+    exercisePlayer.addEventListener(evt, () => { if (!exercisePlayer.hidden) resetFocusDim(); });
+  });
 
   function openExercisePlayer(key) {
     const def = EXERCISE_DEFS[key];
@@ -795,14 +914,18 @@
     activeExercise = key;
     exPhaseIndex = 0;
     exRound = 1;
+    sessionElapsedSeconds = 0;
 
     exercisePlayerTitle.textContent = def.title;
-    exercisePlayer.classList.remove('theme-light', 'theme-dark');
+    exercisePlayerPurpose.textContent = def.purpose;
+    exercisePlayer.classList.remove('theme-light', 'theme-dark', 'focus-dim');
     exercisePlayer.classList.add('theme-' + def.theme);
     exercisePhaseLabel.textContent = 'get ready';
+    exercisePhaseCue.textContent = '';
     exerciseRoundLabel.textContent = '';
     setLungPhaseClass(exerciseLungVisual, null);
     stopTipRotation(exerciseTipInterval, exerciseTipEl);
+    moodOptions.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
 
     durationPicker.hidden = !def.durationPicker;
     exerciseSessionTimer.hidden = !def.durationPicker;
@@ -814,15 +937,26 @@
       exerciseSessionTimer.textContent = formatTime(selectedMinutes * 60);
     }
 
+    const cycleSeconds = def.phases.reduce((sum, p) => sum + p.seconds, 0);
+    if (def.durationPicker) {
+      exercisePlayerEstimate.textContent = 'Pick a length below';
+    } else {
+      exercisePlayerEstimate.textContent = `${def.rounds} rounds · ~${formatTime(def.rounds * cycleSeconds)} min`;
+    }
+
     musicToggleBtn.hidden = !def.music;
     musicEnabled = true;
     musicToggleBtn.setAttribute('aria-pressed', 'true');
     iconSoundOn.hidden = false;
     iconSoundOff.hidden = true;
 
-    exerciseBeginBtn.hidden = false;
-    exerciseBeginBtn.textContent = 'Begin';
+    voiceEnabled = false;
+    voiceToggleBtn.setAttribute('aria-pressed', 'false');
 
+    exerciseBeginBtn.textContent = 'Begin';
+    buildProgressIndicator(def.durationPicker ? 16 : def.rounds);
+
+    showPlayerView('intro');
     exercisePlayer.hidden = false;
     activateModalA11y(exercisePlayer, () => exerciseExitBtn.click());
   }
@@ -830,8 +964,12 @@
   function closeExercisePlayer() {
     clearTimeout(exTimeout);
     clearInterval(sessionTimerInterval);
+    clearInterval(sessionElapsedInterval);
+    clearTimeout(focusDimTimeout);
+    exercisePlayer.classList.remove('focus-dim');
     stopTipRotation(exerciseTipInterval, exerciseTipEl);
     stopAmbientTone();
+    if (window.speechSynthesis) window.speechSynthesis.cancel();
     exercisePlayer.hidden = true;
     activeExercise = null;
     deactivateModalA11y();
@@ -839,7 +977,7 @@
 
   function formatTime(totalSeconds) {
     const m = Math.floor(totalSeconds / 60);
-    const s = totalSeconds % 60;
+    const s = Math.round(totalSeconds % 60);
     return m + ':' + String(s).padStart(2, '0');
   }
 
@@ -848,6 +986,10 @@
       selectedMinutes = Number(btn.dataset.minutes);
       durationPicker.querySelectorAll('.duration-opt').forEach(b => b.classList.toggle('selected', b === btn));
       exerciseSessionTimer.textContent = formatTime(selectedMinutes * 60);
+      const def = EXERCISE_DEFS[activeExercise];
+      const cycleSeconds = def.phases.reduce((sum, p) => sum + p.seconds, 0);
+      const estRounds = Math.max(3, Math.round((selectedMinutes * 60) / cycleSeconds));
+      buildProgressIndicator(estRounds);
     });
   });
 
@@ -856,8 +998,8 @@
   });
 
   exerciseExitBtn.addEventListener('click', () => {
-    /* only confirm if a session is actually in progress (Begin was already clicked) */
-    if (exerciseBeginBtn.hidden) {
+    /* only confirm if a session is actually in progress */
+    if (!playerViewSession.hidden) {
       /* release the exercise player's own trap first so the confirm modal's
          trap doesn't stack a second keydown listener on top of it */
       deactivateModalA11y();
@@ -866,6 +1008,8 @@
       closeExercisePlayer();
     }
   });
+
+  exerciseCloseBtn.addEventListener('click', closeExercisePlayer);
 
   exerciseBeginBtn.addEventListener('click', () => {
     const def = EXERCISE_DEFS[activeExercise];
@@ -881,18 +1025,36 @@
         if (sessionSecondsRemaining <= 0) clearInterval(sessionTimerInterval);
       }, 1000);
     }
-    exerciseBeginBtn.hidden = true;
-    durationPicker.hidden = true;
+    buildProgressIndicator(rounds);
+    sessionElapsedSeconds = 0;
+    sessionElapsedInterval = setInterval(() => { sessionElapsedSeconds += 1; }, 1000);
+
     if (def.music) startAmbientTone();
     if (def.tips) exerciseTipInterval = startTipRotation(exerciseTipEl, BEDTIME_TIPS, 20000);
+
+    showPlayerView('session');
+    resetFocusDim();
+    logEvent('exercise_started', { exercise: activeExercise });
     runExercisePhase(def, rounds);
   });
 
   function runExercisePhase(def, totalRounds) {
-    const phase = def.phases[exPhaseIndex % def.phases.length];
+    const phaseInRound = exPhaseIndex % def.phases.length;
+    const phase = def.phases[phaseInRound];
     exercisePhaseLabel.textContent = phase.label.toLowerCase();
     exerciseRoundLabel.textContent = `round ${exRound} of ${totalRounds}`;
+    updateProgressIndicator(exRound, totalRounds);
     setLungPhaseClass(exerciseLungVisual, phase.action);
+
+    /* on the first phase of each round, show the round-level awareness prompt;
+       every other phase shows the normal per-phase coaching cue */
+    let cueText = phase.cue || '';
+    if (phaseInRound === 0 && def.roundAwareness && def.roundAwareness.length) {
+      cueText = def.roundAwareness[(exRound - 1) % def.roundAwareness.length];
+    }
+    exercisePhaseCue.textContent = cueText;
+
+    if (voiceEnabled) speakPhase(phase.label);
 
     if (phase.action === 'inhale') setToneLevel(0.05, phase.seconds);
     else if (phase.action === 'exhale') setToneLevel(0.015, phase.seconds);
@@ -903,17 +1065,37 @@
         exRound += 1;
       }
       if (exRound > totalRounds) {
-        exercisePhaseLabel.textContent = 'well done';
-        exerciseRoundLabel.textContent = '';
-        logEvent('exercise_completed', { exercise: activeExercise });
-        clearInterval(sessionTimerInterval);
-        stopAmbientTone();
-        setTimeout(closeExercisePlayer, 1600);
+        finishExercise(def, totalRounds);
         return;
       }
       runExercisePhase(def, totalRounds);
     }, phase.seconds * 1000);
   }
+
+  function finishExercise(def, totalRounds) {
+    logEvent('exercise_completed', { exercise: activeExercise, seconds: sessionElapsedSeconds });
+    clearInterval(sessionTimerInterval);
+    clearInterval(sessionElapsedInterval);
+    clearTimeout(focusDimTimeout);
+    exercisePlayer.classList.remove('focus-dim');
+    stopTipRotation(exerciseTipInterval, exerciseTipEl);
+    stopAmbientTone();
+
+    completeTitle.textContent = def.title + ' complete';
+    completeStats.textContent = `${totalRounds} rounds · ${formatTime(sessionElapsedSeconds)} min`;
+    completeNextText.textContent = def.completionNote;
+    moodOptions.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
+
+    showPlayerView('complete');
+  }
+
+  moodOptions.querySelectorAll('.mood-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      moodOptions.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      logEvent('mood_after_exercise', { exercise: activeExercise, mood: btn.dataset.mood });
+    });
+  });
 
   musicToggleBtn.addEventListener('click', () => {
     musicEnabled = !musicEnabled;
@@ -925,6 +1107,31 @@
       gainNode.gain.setValueAtTime(0.0001, audioCtx.currentTime);
     }
   });
+
+  /* ---- optional spoken voice cues via the browser's built-in speech synthesis
+     (no external service, no license needed) — off by default ---- */
+  voiceToggleBtn.addEventListener('click', () => {
+    voiceEnabled = !voiceEnabled;
+    voiceToggleBtn.setAttribute('aria-pressed', String(voiceEnabled));
+    if (!voiceEnabled && window.speechSynthesis) window.speechSynthesis.cancel();
+    else if (voiceEnabled && window.speechSynthesis) {
+      /* speak a near-silent utterance now, while still inside the click gesture,
+         so mobile browsers "unlock" speech synthesis for later scheduled calls */
+      const unlock = new SpeechSynthesisUtterance(' ');
+      unlock.volume = 0;
+      window.speechSynthesis.speak(unlock);
+    }
+  });
+
+  function speakPhase(label) {
+    if (!window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(label);
+    utterance.rate = 0.85;
+    utterance.pitch = 1;
+    utterance.volume = 0.8;
+    window.speechSynthesis.speak(utterance);
+  }
 
   /* ---- synthesized ambient tone via Web Audio API (no licensed audio needed) ---- */
   let audioCtx = null;
