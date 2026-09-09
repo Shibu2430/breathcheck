@@ -27,4 +27,4 @@ Breathing through the mouth during exercise is normal. Breathing through the mou
 
 ## None of this is a diagnosis
 
-These are just patterns to notice, not symptoms of anything specific — plenty of people have one or two of these habits and are completely fine. If you want an actual baseline rather than a guess, [BreathCheck's three-minute assessment](/) checks your resting rate and breath-hold control and gives you a plain-language read on where you stand today.
+These are just patterns to notice, not symptoms of anything specific — plenty of people have one or two of these habits and are completely fine. If you want an actual baseline rather than a guess, [BreathCheck's three-minute assessment]({{ '/' | relative_url }}) checks your resting rate and breath-hold control and gives you a plain-language read on where you stand today.

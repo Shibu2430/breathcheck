@@ -23,4 +23,4 @@ You don't need to check daily for this to work — a few times a week is enough 
 
 ## Where to see your trend
 
-BreathCheck's [Progress section](/#progress) keeps a running history alongside your current streak, so you're not relying on memory to notice whether things are actually shifting. If you haven't run the assessment yet, [start here](/) — the first check just establishes your baseline; the real value shows up after a few more.
+BreathCheck's [Progress section]({{ '/#progress' | relative_url }}) keeps a running history alongside your current streak, so you're not relying on memory to notice whether things are actually shifting. If you haven't run the assessment yet, [start here]({{ '/' | relative_url }}) — the first check just establishes your baseline; the real value shows up after a few more.

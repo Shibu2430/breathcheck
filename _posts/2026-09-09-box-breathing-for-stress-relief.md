@@ -27,4 +27,4 @@ Box breathing works well right before something that needs focus (a hard convers
 
 ## Try it guided
 
-Reading the steps is one thing; following an actual paced animation is easier the first few times. [BreathCheck's box breathing exercise](/#exercises) guides you through it visually, with the pacing built in — no counting required.
+Reading the steps is one thing; following an actual paced animation is easier the first few times. [BreathCheck's box breathing exercise]({{ '/#exercises' | relative_url }}) guides you through it visually, with the pacing built in — no counting required.

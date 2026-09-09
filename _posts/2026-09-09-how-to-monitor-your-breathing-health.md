@@ -11,7 +11,7 @@ You don't need special equipment to keep an eye on it. Here's a simple, low-effo
 
 **Resting breathing rate.** Sit still for 60 seconds and count full breaths (in and out counts as one). A commonly cited adult resting range is around 12–18 breaths per minute, though this varies by source and by person — the point isn't to hit a magic number, it's to know your own baseline so you can notice if it shifts.
 
-**Breath-hold control.** After a normal exhale, hold gently until the first real urge to breathe — not your maximum. This is a control check, not an endurance test, and it's worth reading our [breath-hold test explainer](/blog/breath-hold-test-explained/) before trying it, since doing it as a max-effort challenge misses the point and isn't what it's meant to measure.
+**Breath-hold control.** After a normal exhale, hold gently until the first real urge to breathe — not your maximum. This is a control check, not an endurance test, and it's worth reading our [breath-hold test explainer]({{ '/blog/breath-hold-test-explained/' | relative_url }}) before trying it, since doing it as a max-effort challenge misses the point and isn't what it's meant to measure.
 
 ## Why one reading doesn't tell you much
 
@@ -19,7 +19,7 @@ A single count on a single day is noisy — caffeine, stress, posture, and just 
 
 ## A simple routine
 
-Once a day, or even a few times a week, is enough. [BreathCheck's assessment](/) walks through both checks above in about three minutes and keeps a running history so you can see your trend rather than obsessing over any single number.
+Once a day, or even a few times a week, is enough. [BreathCheck's assessment]({{ '/' | relative_url }}) walks through both checks above in about three minutes and keeps a running history so you can see your trend rather than obsessing over any single number.
 
 ## When to actually see someone
 

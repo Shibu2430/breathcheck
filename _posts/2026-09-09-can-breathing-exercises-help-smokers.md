@@ -19,8 +19,8 @@ The more consistent finding across this research isn't really about the lungs di
 
 ## A reasonable way to use this
 
-If you're a smoker curious about breathing practice, or you're in the middle of trying to quit: think of it as a support tool, not a treatment. A few minutes of [box breathing](/#exercises) when a craving hits, or a slower [extended-exhale practice](/#exercises) during a stressful moment, costs nothing and takes no equipment.
+If you're a smoker curious about breathing practice, or you're in the middle of trying to quit: think of it as a support tool, not a treatment. A few minutes of [box breathing]({{ '/#exercises' | relative_url }}) when a craving hits, or a slower [extended-exhale practice]({{ '/#exercises' | relative_url }}) during a stressful moment, costs nothing and takes no equipment.
 
-If you want an honest starting point, [BreathCheck's assessment](/) will give you a read on your current resting rate and breath-hold control — useful as a baseline to notice change against over time, not as a measurement of lung damage or disease risk.
+If you want an honest starting point, [BreathCheck's assessment]({{ '/' | relative_url }}) will give you a read on your current resting rate and breath-hold control — useful as a baseline to notice change against over time, not as a measurement of lung damage or disease risk.
 
 And if you're ready to quit, breathing exercises are a nice complement to — never a replacement for — real cessation support. In the US, 1-800-QUIT-NOW connects you to free, confidential coaching; most countries have an equivalent national quitline.

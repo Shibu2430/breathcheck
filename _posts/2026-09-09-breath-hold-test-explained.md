@@ -23,4 +23,4 @@ As a rough, non-clinical guide: shorter holds (under 10 seconds) often go with f
 
 This should always feel gentle. Never hyperventilate beforehand, stay seated, don't do this in water or while driving, and stop immediately if you feel dizzy, faint, or unwell. If any of that doesn't sound like you right now, BreathCheck's assessment has a **skip** option for exactly this stage — using it costs you nothing.
 
-Curious what your own number looks like? [Try the assessment](/) — it takes about three minutes end to end.
+Curious what your own number looks like? [Try the assessment]({{ '/' | relative_url }}) — it takes about three minutes end to end.
