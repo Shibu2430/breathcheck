@@ -373,7 +373,11 @@
 
   boxStartBtn.addEventListener('click', () => {
     boxStartBtn.hidden = true;
-    runBoxPhase();
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        runBoxPhase();
+      });
+    });
   });
 
   /* ================= SCORING ================= */
@@ -699,6 +703,29 @@
   });
 
   document.getElementById('progress-cta-link').addEventListener('click', revealProgress);
+
+  /* Nav links to Why it matters / How it works / Exercises point to sections
+     that get display:none while the scored assessment is active — a plain
+     anchor jump to a hidden element does nothing, which is exactly the "the
+     links don't work" bug. Intercept those clicks: if a test is in progress,
+     confirm before abandoning it, then leave and scroll to the target. */
+  ['#why-matters', '#how-it-works', '#exercises'].forEach(hash => {
+    document.querySelectorAll(`a[href="${hash}"]`).forEach(link => {
+      link.addEventListener('click', (e) => {
+        if (!assessmentSection.hidden) {
+          e.preventDefault();
+          showConfirm("Leave the test now? Your progress on this attempt won't be saved.", () => {
+            clearInterval(rateInterval);
+            clearInterval(holdInterval);
+            clearTimeout(boxTimeout);
+            returnToHome();
+            document.querySelector(hash).scrollIntoView({ behavior: 'smooth' });
+          });
+        }
+        /* otherwise let the normal anchor jump happen */
+      });
+    });
+  });
 
   /* init: if returning user has history, reveal progress nav */
   if (loadHistory().length) {
@@ -1049,7 +1076,17 @@
     showPlayerView('session');
     resetFocusDim();
     logEvent('exercise_started', { exercise: activeExercise });
-    runExercisePhase(def, rounds);
+    if (voiceEnabled) speakText("Let's begin. Find a comfortable position.");
+    /* the session view has this instant gone from hidden to visible; without
+       giving the browser a frame to actually paint that "resting" state first,
+       the very first phase's transform transition gets skipped entirely and
+       just jumps straight to its end state with no visible animation. Two
+       nested rAFs reliably wait for that paint across browsers. */
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        runExercisePhase(def, rounds);
+      });
+    });
   });
 
   function runExercisePhase(def, totalRounds) {
@@ -1068,7 +1105,18 @@
     }
     exercisePhaseCue.textContent = cueText;
 
-    if (voiceEnabled) speakPhase(phase.label);
+    if (voiceEnabled) {
+      if (phaseInRound === 0 && exRound === totalRounds && totalRounds > 1) {
+        speakText("One more round.");
+      } else if (phaseInRound === 0 && exRound !== 1 && def.roundAwareness && def.roundAwareness.length
+                 && (exRound === 2 || (exRound - 2) % 6 === 0)) {
+        /* occasional spoken guidance — not every round, so it stays a light
+           touch rather than a constant narrator */
+        speakText(def.roundAwareness[0]);
+      } else {
+        speakText(nextVoicePhrase(phase.action));
+      }
+    }
 
     if (phase.action === 'inhale') setToneLevel(0.05, phase.seconds);
     else if (phase.action === 'exhale') setToneLevel(0.015, phase.seconds);
@@ -1099,6 +1147,8 @@
     completeStats.textContent = `${totalRounds} rounds · ${formatTime(sessionElapsedSeconds)} min`;
     completeNextText.textContent = def.completionNote;
     moodOptions.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
+
+    if (voiceEnabled) speakText("That's it. " + def.completionNote);
 
     showPlayerView('complete');
   }
@@ -1141,19 +1191,46 @@
   function pickCalmVoice() {
     if (cachedVoice || !window.speechSynthesis) return cachedVoice;
     const voices = window.speechSynthesis.getVoices();
-    cachedVoice = voices.find(v => /en/i.test(v.lang)) || voices[0] || null;
+    if (!voices.length) return null;
+    /* The Web Speech API doesn't expose gender, tone, or "breathiness" as data —
+       only a name string, so this is a best-effort match against common female
+       voice names across platforms (Windows/macOS/iOS/Android/Chrome). Which
+       voices actually exist depends entirely on the visitor's own device. */
+    const femalePattern = /female|samantha|victoria|karen|zira|moira|tessa|fiona|susan|kate|serena|allison|joanna|salli|kendra|kimberly|ivy|amy|emma|olivia|aria|jenny/i;
+    const englishFemale = voices.find(v => /^en/i.test(v.lang) && femalePattern.test(v.name));
+    const anyFemale = voices.find(v => femalePattern.test(v.name));
+    const english = voices.find(v => /^en/i.test(v.lang));
+    cachedVoice = englishFemale || anyFemale || english || voices[0];
     return cachedVoice;
   }
 
-  function speakPhase(label) {
+  /* Natural varied phrasing rather than a single bare word repeated every
+     round — reads much less robotic. Each phase type cycles through a short
+     list rather than saying the exact same line every time. */
+  const VOICE_PHRASES = {
+    inhale: ["Breathe in slowly.", "Breathe in.", "Slowly, breathe in."],
+    hold: ["Hold.", "And hold.", "Just hold here."],
+    exhale: ["And gently breathe out.", "Slowly breathe out.", "Breathe out."]
+  };
+  const voicePhraseIndex = { inhale: 0, hold: 0, exhale: 0 };
+  function nextVoicePhrase(action) {
+    const list = VOICE_PHRASES[action] || [action];
+    const phrase = list[voicePhraseIndex[action] % list.length];
+    voicePhraseIndex[action] = (voicePhraseIndex[action] || 0) + 1;
+    return phrase;
+  }
+
+  function speakText(text) {
     if (!window.speechSynthesis) return;
-    window.speechSynthesis.cancel();
-    /* the trailing ellipsis gives most engines a small natural pause,
-       which reads as calmer than the bare word spoken abruptly */
-    const utterance = new SpeechSynthesisUtterance(label + '…');
-    utterance.rate = 0.68;   /* noticeably slow, unhurried pace */
-    utterance.pitch = 0.85;  /* slightly lower, softer tone rather than chirpy */
-    utterance.volume = 0.6;  /* soft, not attention-grabbing */
+    /* deliberately NOT calling .cancel() here — utterances queue naturally,
+       so a short phrase from one phase finishing slightly late just plays
+       right before the next one instead of being abruptly cut off, which
+       would sound like an interruption rather than a calm, natural voice.
+       Speech is fully stopped on exit or when the voice toggle is turned off. */
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 0.78;   /* slow, deliberate, but still intelligible for full sentences */
+    utterance.pitch = 0.88;  /* medium-low, warm rather than bright/chirpy */
+    utterance.volume = 0.75; /* present but not announcement-loud — intimate, one-to-one */
     const voice = pickCalmVoice();
     if (voice) utterance.voice = voice;
     window.speechSynthesis.speak(utterance);
