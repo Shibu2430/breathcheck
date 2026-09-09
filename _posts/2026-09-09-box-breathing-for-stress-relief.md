@@ -1,6 +1,6 @@
 ---
 title: "Box breathing for stress relief"
-image: /assets/images/blog/box-breathing-stress.png
+image: /assets/images/blog/box-breathing-stress-v2.png
 ---
 
 Box breathing is about as simple as a breathing technique gets: four seconds in, four second hold, four seconds out, four second hold, repeat. The "box" name comes from the fact that all four parts are equal length — easy to picture, easy to follow without counting on your fingers.

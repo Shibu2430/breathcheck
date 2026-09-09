@@ -1,6 +1,6 @@
 ---
 title: "Signs your breathing habits could use a little attention"
-image: /assets/images/blog/signs-breathing-habits.png
+image: /assets/images/blog/signs-breathing-habits-v2.png
 ---
 
 Breathing patterns drift slowly, which is exactly why they're easy to miss. There's no single moment where "fine" turns into "not fine" — it just gradually becomes normal. Here are a few patterns worth noticing, without reading too much into any one of them on its own.

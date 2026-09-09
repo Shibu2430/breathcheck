@@ -1,6 +1,6 @@
 ---
 title: "How to monitor your breathing health"
-image: /assets/images/blog/monitor-breathing-health.png
+image: /assets/images/blog/monitor-breathing-health-v2.png
 ---
 
 Most people never check their breathing at all — it's the one bodily function that runs entirely in the background, so there's rarely a moment where you'd think to look at it. That's exactly why it's easy for a pattern to drift (faster, shallower, more effortful) without you ever noticing.

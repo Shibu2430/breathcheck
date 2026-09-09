@@ -1,6 +1,6 @@
 ---
 title: "The breath-hold test, explained"
-image: /assets/images/blog/breath-hold-test.png
+image: /assets/images/blog/breath-hold-test-v2.png
 ---
 
 If you've tried BreathCheck's Stage 2, you've probably wondered why the instructions specifically say "not your maximum." It's a fair question — most people's instinct with a breath-hold is to see how long they can survive without air. That instinct is exactly what this test asks you not to follow.

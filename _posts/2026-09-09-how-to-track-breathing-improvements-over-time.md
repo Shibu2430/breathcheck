@@ -1,6 +1,6 @@
 ---
 title: "How to track your breathing improvements over time"
-image: /assets/images/blog/track-breathing-progress.png
+image: /assets/images/blog/track-breathing-progress-v2.png
 ---
 
 A single breathing check tells you very little. Your resting rate on any given day can shift with caffeine, sleep, stress, or just the mild self-consciousness of counting your own breaths on purpose. What actually means something is the trend across days and weeks — and that only shows up if you're tracking it.

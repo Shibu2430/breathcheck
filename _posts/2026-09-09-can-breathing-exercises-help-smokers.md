@@ -1,6 +1,6 @@
 ---
 title: "Can breathing exercises help smokers? What the research actually says"
-image: /assets/images/blog/smokers-breathing.png
+image: /assets/images/blog/smokers-breathing-v2.png
 ---
 
 The honest answer first: breathing exercises are not a treatment for smoking-related lung damage, and they're not a substitute for quitting. If you smoke, quitting is still the single most effective thing you can do for your lungs — nothing in this post changes that.
